@@ -1,0 +1,12 @@
+name: incentive_survey
+title: incentive_survey
+username:
+account: sbacon3
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3284218
+bundleId: 4226397
+url: https://sbacon3.shinyapps.io/incentive_survey/
+when: 1613414313.87552
+asMultiple: FALSE
+asStatic: FALSE
