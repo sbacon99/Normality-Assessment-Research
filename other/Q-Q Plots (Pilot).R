@@ -280,3 +280,4 @@ Dataset8bands_2
 
 shapiro.test(normVector8_2)
 t.test(normVector8_2)
+
