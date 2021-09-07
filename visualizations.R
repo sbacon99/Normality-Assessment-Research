@@ -457,3 +457,13 @@ grid.arrange(t5_bar, grid.arrange(Dataset5noRef,Dataset5ref,Dataset5bands), nrow
 grid.arrange(t6_bar, grid.arrange(Dataset6noRef,Dataset6ref,Dataset6bands), nrow=1, top = "Plot 6 (Pilot)")
 grid.arrange(t7_bar, grid.arrange(Dataset7noRef_2,Dataset7ref_2,Dataset7bands_2), nrow=1, top = "Plot 7 (Pilot)")
 grid.arrange(t8_bar, grid.arrange(Dataset8noRef_2,Dataset8ref_2,Dataset8bands_2), nrow=1, top = "Plot 8 (Pilot)")
+
+# chi-square test for plots
+chisq1 <- chisq.test(t1[,2:3])
+chisq2 <- chisq.test(t2[,2:3])
+chisq3 <- chisq.test(t3[,2:3])
+chisq4 <- chisq.test(t4[,2:3])
+chisq5 <- chisq.test(t5[,2:3])
+chisq6 <- chisq.test(t6[,2:3])
+chisq7 <- chisq.test(t7[,2:3])
+chisq8 <- chisq.test(t8[,2:3])
