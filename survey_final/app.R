@@ -29,7 +29,7 @@ ui <- fluidPage(
                      in this research is completely optional. You may choose not to participate, and you may also 
                      withdraw from the study at any time by exiting the survey. There will be no penalty for 
                      not participating or for withdrawing from the survey, although participants who withdraw 
-                     will not be eligible to receive the incentive ($5 Amazon gift card)."),
+                     will not be eligible to receive the incentive ($10 Amazon gift card)."),
                      br(),
                      p("Participation in this study includes the following survey which will take approximately 
                        five minutes to complete. The survey consists of three demographic questions to 
@@ -39,7 +39,7 @@ ui <- fluidPage(
                        will be asked three feedback questions about which visualizations you did and did 
                        not prefer. This survey does not require you to share any identifiable information. 
                        However, upon completion of the survey, you will have the option to share your email 
-                       address in a separate survey to receive a $5 Amazon gift card. The first 150 respondents will
+                       address in a separate survey to receive a $10 Amazon gift card. The first 150 respondents will
                        receive the incentive. If you share your email 
                        address, it will be added to a list that can only be accessed by the co-investigator. 
                        Your email address will not be shared with any additional parties, and it will be 
@@ -415,14 +415,14 @@ server <- function(input, output, session) {
         for(i in 1:8){
             indList[i] <- sheet$cell[[i]]$effectiveValue$numberValue
         }
-
+        
         indList <- c(userID, indList)
         readIn %>% sheet_append(data.frame(t(as.matrix(indList))), sheet = "survey_order")
         indList
     })
     
     output$plot0 <- renderImage({
-        filename <- normalizePath(file.path('./images','0_test.png'))
+        filename <- normalizePath(file.path('./images','0.png'))
         list(src = filename, width = 350, height = 262.5)
     }, deleteFile = FALSE)
     
@@ -629,4 +629,3 @@ server <- function(input, output, session) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
