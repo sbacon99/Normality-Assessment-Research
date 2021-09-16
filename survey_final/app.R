@@ -18,14 +18,14 @@ ui <- fluidPage(
     
     theme = shinytheme("sandstone"),
     
-    titlePanel("Q-Q Plot Assessment"),
+    titlePanel("Q-Q Plot (Normal Probability Plots) Assessment"),
     
     conditionalPanel(condition="input.agr==0",
                      br(),
-                     h1("Assessing Normality Using Q-Q Plots"),
+                     h1("Assessing Normality Using Q-Q Plots (Normal Probability Plots)"),
                      br(),
-                     p("The purpose of this study is to `gain a better understanding as to what variations of 
-                     Q-Q Plots allow viewers to accurately assess the normality of data. Your participation 
+                     p("The purpose of this study is to gain a better understanding as to what variations of 
+                     Q-Q Plots (Normal Probability Plots) allow viewers to accurately assess the normality of data. Your participation 
                      in this research is completely optional. You may choose not to participate, and you may also 
                      withdraw from the study at any time by exiting the survey. There will be no penalty for 
                      not participating or for withdrawing from the survey, although participants who withdraw 
@@ -39,12 +39,12 @@ ui <- fluidPage(
                        will be asked three feedback questions about which visualizations you did and did 
                        not prefer. This survey does not require you to share any identifiable information. 
                        However, upon completion of the survey, you will have the option to share your email 
-                       address in a separate survey to receive a $10 Amazon gift card. The first 150 respondents will
+                       address in a separate survey to receive a $10 Amazon gift card. The first 190 respondents will
                        receive the incentive. If you share your email 
                        address, it will be added to a list that can only be accessed by the co-investigator. 
                        Your email address will not be shared with any additional parties, and it will be 
                        removed from our records as soon as you have received the incentive via email. "),
-                     strong("If you fail to select a response, the survey will end immediately and your answers will not be counted."),
+                     strong("If you do not select a response, the survey will end immediately and your answers will not be counted."),
                      br(),
                      p("Please contact one of the primary researchers with any questions about the survey:"),
                      p("Sam Bacon (sbacon3@elon.edu)"),
@@ -87,7 +87,7 @@ ui <- fluidPage(
                                     "1-2" = "1-2 courses",
                                     "More than 2" = "3+ courses")),
                      # Demographic Question 3
-                     radioButtons("dem3", "Have you ever seen a Q-Q Plot before?", 
+                     radioButtons("dem3", "Have you ever seen a Q-Q Plot (Normal Probability Plot) before?", 
                                   c("Select a response" = "null",
                                     "Yes" = "yes",
                                     "No" = "no",
@@ -526,14 +526,14 @@ server <- function(input, output, session) {
             ss2 %>% sheet_append(responses_post, sheet = "post_survey")
             ss2 %>% sheet_append(data.frame(userID), sheet = "userID_count")
             
-            paste("We just received your response. Thanks for submitting! Use the incentive key below to complete the incentive survey:")
+            paste("We just received your response. Thanks for submitting! Copy the incentive key below and paste it into the incentive survey with your email to receive the incentive:")
         }
     })
     
     # Generating incentive keys
     
     output$incentiveKey <- renderText({
-        keys <- round(runif(50, min = 10000, max = 99999), 0)
+        keys <- round(runif(200, min = 10000, max = 99999), 0)
         keyLocation <- gs4_get('https://docs.google.com/spreadsheets/d/155fMb2opqCRTEstJg-qaUAv1SqDPxl6NfX2ciQqj9Zo/edit#gid=0')
         sheet1 <- read_sheet(keyLocation, sheet = "used_keys")
         sheet2 <- read_sheet(keyLocation, sheet = "sent_keys")
