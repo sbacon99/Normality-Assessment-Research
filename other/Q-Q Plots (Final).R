@@ -16,6 +16,16 @@ Dataset0noRef <- ggplot(data = frame0, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + coord_cartesian(ylim = c(0,30))
 
+
+# for presentation of progress...
+PofP <- ggplot(data = frame0, mapping = aes(sample = value)) +
+  stat_qq_point(colour = "black") +
+  stat_qq_line(identity = FALSE) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")+ coord_cartesian(ylim = c(0,30)) +
+ggtitle("Quantile-Quantile Plot [n = 20, mean = 15, std dev  = 5]")
+
+PofP
+
 Dataset0ref <- ggplot(data = frame0, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
