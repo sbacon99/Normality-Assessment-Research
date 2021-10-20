@@ -24,7 +24,34 @@ PofP <- ggplot(data = frame0, mapping = aes(sample = value)) +
   labs(x = "Theoretical Quantiles", y = "Sample Quantiles")+ coord_cartesian(ylim = c(0,30)) +
 ggtitle("Quantile-Quantile Plot [n = 20, mean = 15, std dev  = 5]")
 
-PofP
+set.seed(21)
+framePofP <- data.frame(value = rnorm(10000, mean = 15, sd = 5))
+frame2PofP <- data.frame(value = rf(10000, 3, 10))
+
+normPofP <- ggplot(data = framePofP, mapping = aes(framePofP$value)) +
+  geom_histogram() + labs(x = "Value", y = "Count") +
+  ggtitle("Normal distribution [n = 10,000]")
+
+norm2PofP <- ggplot(data = framePofP, mapping = aes(sample = value)) +
+  stat_qq_point(colour = "black") + labs(x = "Value", y = "Count") +
+  stat_qq_line(identity = FALSE, color = "red") +
+  ggtitle("Normal distribution [n = 10,000]")
+
+normPofP
+norm2PofP
+
+fPofP <- ggplot(data = frame2PofP, mapping = aes(frame2PofP$value)) +
+  geom_histogram() + labs(x = "Value", y = "Count") +
+  ggtitle("F distribution [n = 10,000]")
+
+f2PofP <- ggplot(data = frame2PofP, mapping = aes(sample = value)) +
+  stat_qq_point(colour = "black") + labs(x = "Value", y = "Count") +
+  stat_qq_line(identity = FALSE, color = "red") +
+  ggtitle("F distribution [n = 10,000]")
+
+fPofP
+f2PofP
+
 
 Dataset0ref <- ggplot(data = frame0, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
