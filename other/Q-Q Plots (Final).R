@@ -6,6 +6,38 @@ install.packages('qqplotr')
 library(qqplotr)
 install.packages('e1071')
 library(e1071)
+install.packages("gridExtra")
+library(gridExtra)
+
+
+
+test1 <- data.frame(value = runif(20, 10, 20))
+f1 <- test1$value
+shapiro.test(f1)
+
+test2 <- data.frame(value = runif(20, 10, 20))
+f2 <- test2$value
+shapiro.test(f2)
+
+
+
+ref1 <- ggplot(data = test1, mapping = aes(sample = value)) +
+  stat_qq_point(colour = "black") +
+  stat_qq_line(identity = FALSE) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")+ coord_cartesian(ylim = c(5,25)) +
+  annotate("text", x=11, y=23, label= "W = 0.91 ")
+
+ref2 <- ggplot(data = test2, mapping = aes(sample = value)) +
+  stat_qq_point(colour = "black") +
+  stat_qq_line(identity = FALSE) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")+ coord_cartesian(ylim = c(5,25)) + 
+  annotate("text", x=11, y=23, label= "W = 0.91")
+
+grid.arrange(ref1, ref2, nrow = 1)
+
+
+
+
 
 # DATASET 0 (graph 0)
 set.seed(21)
@@ -15,43 +47,6 @@ vector0 <- frame0$value
 Dataset0noRef <- ggplot(data = frame0, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + coord_cartesian(ylim = c(0,30))
-
-
-# for presentation of progress...
-PofP <- ggplot(data = frame0, mapping = aes(sample = value)) +
-  stat_qq_point(colour = "black") +
-  stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")+ coord_cartesian(ylim = c(0,30)) +
-ggtitle("Quantile-Quantile Plot [n = 20, mean = 15, std dev  = 5]")
-
-set.seed(21)
-framePofP <- data.frame(value = rnorm(10000, mean = 15, sd = 5))
-frame2PofP <- data.frame(value = rf(10000, 3, 10))
-
-normPofP <- ggplot(data = framePofP, mapping = aes(framePofP$value)) +
-  geom_histogram() + labs(x = "Value", y = "Count") +
-  ggtitle("Normal distribution [n = 10,000]")
-
-norm2PofP <- ggplot(data = framePofP, mapping = aes(sample = value)) +
-  stat_qq_point(colour = "black") + labs(x = "Value", y = "Count") +
-  stat_qq_line(identity = FALSE, color = "red") +
-  ggtitle("Normal distribution [n = 10,000]")
-
-normPofP
-norm2PofP
-
-fPofP <- ggplot(data = frame2PofP, mapping = aes(frame2PofP$value)) +
-  geom_histogram() + labs(x = "Value", y = "Count") +
-  ggtitle("F distribution [n = 10,000]")
-
-f2PofP <- ggplot(data = frame2PofP, mapping = aes(sample = value)) +
-  stat_qq_point(colour = "black") + labs(x = "Value", y = "Count") +
-  stat_qq_line(identity = FALSE, color = "red") +
-  ggtitle("F distribution [n = 10,000]")
-
-fPofP
-f2PofP
-
 
 Dataset0ref <- ggplot(data = frame0, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
@@ -234,6 +229,8 @@ Dataset6noRef
 Dataset6ref
 Dataset6bands
 
+grid.arrange(Dataset6ref, Dataset7ref, nrow = 1)
+
 shapiro.test(vector6)
 t.test(vector6)
 
@@ -292,3 +289,58 @@ Dataset8bands
 
 shapiro.test(vector8)
 t.test(vector8)
+
+
+# Presentation of Progress
+
+# Slide 4
+PofP <- ggplot(data = frame0, mapping = aes(sample = value)) +
+  stat_qq_point(colour = "black") +
+  stat_qq_line(identity = FALSE) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")+ coord_cartesian(ylim = c(0,30)) +
+  ggtitle("Quantile-Quantile Plot [n = 20, mean = 15, std dev  = 5]")
+
+# Slide 7
+set.seed(21)
+framePofP <- data.frame(value = rnorm(10000, mean = 0, sd = 1))
+frame2PofP <- data.frame(value = rf(10000, 7, 10))
+
+normPofP <- ggplot(data = framePofP, mapping = aes(value)) +
+  geom_histogram(aes(y=..density..)) + labs(x = "Value", y = "Density") +
+  stat_function(fun = dnorm, args = list(mean = mean(framePofP$value),sd = sd(framePofP$value)),col = "blue",size = 1)
+
+norm2PofP <- ggplot(data = framePofP, mapping = aes(sample = value)) +
+  stat_qq_point(colour = "black") + labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  stat_qq_line(identity = FALSE, color = "red")
+
+normPofP
+norm2PofP
+
+fPofP <- ggplot(data = frame2PofP, mapping = aes(value)) +
+  geom_histogram(aes(y=..density..)) + labs(x = "Value", y = "Density") +
+  ggtitle("F [n = 10,000]") + stat_function(fun = dnorm, args = list(mean = mean(frame2PofP$value),sd = sd(frame2PofP$value)),col = "red",size = 1)
+
+f2PofP <- ggplot(data = frame2PofP, mapping = aes(sample = value)) +
+  stat_qq_point(colour = "black") + labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  stat_qq_line(identity = FALSE, color = "red") 
+
+fPofP
+f2PofP
+
+# Slide 15
+frame3PofP <- data.frame(value = runif(10000, min=0, max=2))
+
+unifPofP <- ggplot(data = frame3PofP, mapping = aes(value)) +
+  geom_histogram(aes(y=..density..)) + labs(x = "Value", y = "Density") +
+  ggtitle("Uniform [n = 10000]") + stat_function(fun = dnorm, args = list(mean = mean(frame3PofP$value),sd = sd(frame3PofP$value)),col = "red",size = 1)
+
+unif2PofP <- ggplot(data = frame3PofP, mapping = aes(sample = value)) +
+  stat_qq_point(colour = "black") + labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  stat_qq_line(identity = FALSE, color = "red") 
+
+unifPofP
+unif2PofP
+
+grid.arrange(normPofP, fPofP, unifPofP, norm2PofP, f2PofP, unif2PofP, nrow = 2)
+grid.arrange(norm2PofP, f2PofP, unif2PofP, nrow = 1)
+
