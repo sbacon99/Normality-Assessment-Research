@@ -25,13 +25,13 @@ ref1 <- ggplot(data = test1, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
   labs(x = "Theoretical Quantiles", y = "Sample Quantiles")+ coord_cartesian(ylim = c(5,25)) +
-  annotate("text", x=11, y=23, label= "W = 0.91 ")
+  annotate("text", x=12, y=23, label= "W = 0.90 ")
 
 ref2 <- ggplot(data = test2, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
   labs(x = "Theoretical Quantiles", y = "Sample Quantiles")+ coord_cartesian(ylim = c(5,25)) + 
-  annotate("text", x=11, y=23, label= "W = 0.91")
+  annotate("text", x=11, y=23, label= "W = 0.90")
 
 grid.arrange(ref1, ref2, nrow = 1)
 
@@ -88,6 +88,8 @@ Dataset1bands <- ggplot(data = frame1, mapping = aes(sample = value)) +
 Dataset1noRef
 Dataset1ref
 Dataset1bands
+
+grid.arrange(Dataset1noRef, Dataset1ref, Dataset1bands, nrow = 1)
 
 shapiro.test(vector1)
 t.test(vector1)
@@ -306,8 +308,8 @@ framePofP <- data.frame(value = rnorm(10000, mean = 0, sd = 1))
 frame2PofP <- data.frame(value = rf(10000, 7, 10))
 
 normPofP <- ggplot(data = framePofP, mapping = aes(value)) +
-  geom_histogram(aes(y=..density..)) + labs(x = "Value", y = "Density") +
-  stat_function(fun = dnorm, args = list(mean = mean(framePofP$value),sd = sd(framePofP$value)),col = "blue",size = 1)
+  geom_histogram(aes(y=..density..)) + labs(x = "Value", y = "Density") + ggtitle("Normal [n = 10,000]") +
+  stat_function(fun = dnorm, args = list(mean = mean(framePofP$value),sd = sd(framePofP$value)),col = "red",size = 1)
 
 norm2PofP <- ggplot(data = framePofP, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") + labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
@@ -332,7 +334,7 @@ frame3PofP <- data.frame(value = runif(10000, min=0, max=2))
 
 unifPofP <- ggplot(data = frame3PofP, mapping = aes(value)) +
   geom_histogram(aes(y=..density..)) + labs(x = "Value", y = "Density") +
-  ggtitle("Uniform [n = 10000]") + stat_function(fun = dnorm, args = list(mean = mean(frame3PofP$value),sd = sd(frame3PofP$value)),col = "red",size = 1)
+  ggtitle("Uniform [n = 10,000]") + stat_function(fun = dnorm, args = list(mean = mean(frame3PofP$value),sd = sd(frame3PofP$value)),col = "red",size = 1)
 
 unif2PofP <- ggplot(data = frame3PofP, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") + labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +

@@ -2,18 +2,19 @@
 
 #libraries
 install.packages("gridExtra")
-library(gridExtra)
 install.packages("grid")
-library(grid)
 install.packages("gridtext")
-library(gridtext)
 install.packages("ggplot2")
-library(ggplot2)
 install.packages("googlesheets4")
-library(googlesheets4)
 install.packages('dplyr')
-library(dplyr)
 install.packages("reshape2")
+
+library(grid)
+library(gridExtra)
+library(gridtext)
+library(ggplot2)
+library(googlesheets4)
+library(dplyr)
 library(reshape2)
 library(tidyr)
 
@@ -24,35 +25,69 @@ final_survey <- read_sheet("https://docs.google.com/spreadsheets/d/1cTMfOSR_l9S5
 post_survey <- read_sheet("https://docs.google.com/spreadsheets/d/1cTMfOSR_l9S57YTX_i1SXhJvl0SVcVbU550NJD8OHSw/edit#gid=1629775005", sheet = "post_survey" )
 survey_order <- read_sheet("https://docs.google.com/spreadsheets/d/1cTMfOSR_l9S57YTX_i1SXhJvl0SVcVbU550NJD8OHSw/edit#gid=1629775005", sheet = "survey_order")
 
-#correct answers
-correct <- c("normal","normal","non-normal","normal","non-normal","normal","non-normal","non-normal","normal")
-outliers <- c("no","no","yes","no","no","yes","yes","yes","yes")
+# solutions
+correct_test <- c("normal","normal","non-normal","normal","non-normal","normal","non-normal","non-normal","normal")
+correct_notest <- c("normal","non-normal","normal","non-normal","normal","non-normal","non-normal","normal")
+
+correct2_test <- c("normal","normal","f","normal","uniform","normal","uniform","f","normal")
+
+outliers_test <- c("no","no","no","yes","no","no","yes","yes","yes")
 
 # create answers_demographics table (demographics + responses)
 x <- data.frame(zero=logical(),one=logical(),two=logical(),three=logical(),four=logical(),five=logical(),six=logical(),seven=logical())
 
 for (i in 1:nrow(final_survey)) {
-  comparison <- select(final_survey, -c(userID))[i,] == correct
+  comparison <- select(final_survey, -c(userID, survey0_dist))[i,] == correct_notest
   total <- cbind(comparison, sum(comparison==TRUE))
   x <- rbind(x,total)
 }
+
 answers_demographics <- cbind(final_pre,x)
 
-# average correct responses based on level
-level <- aggregate(answers_demographics$V10, list(answers_demographics$pre1), FUN=mean)
+# average correct responses based on demographics
+accuracy_pre1 <- aggregate(answers_demographics$V9, list(answers_demographics$pre1), FUN=mean)[-2,]
+accuracy_pre2 <- aggregate(answers_demographics$V9, list(answers_demographics$pre2), FUN=mean)[-4,]
+accuracy_pre3 <- aggregate(answers_demographics$V9, list(answers_demographics$pre3), FUN=mean)[-3,]
 
-level_bar <- ggplot(level[-2,], aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") + ylab("Avg. Correct") + xlab("Current Status") + 
+pre1_bar <- ggplot(accuracy_pre1, aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") + ylab("Avg. Correct") + xlab("Current Status") + 
       geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Experience")
-level_box <- ggplot(answers_demographics, aes(x=pre1, y=V10, fill=pre1)) + geom_boxplot() + xlab("Experience level") + ylab("") +
+pre1_box <- ggplot(filter(answers_demographics, pre1!="null"), aes(x=pre1, y=V9, fill=pre1)) + geom_boxplot() + xlab("Experience level") + ylab("") +
       theme(legend.position="none") + ggtitle("Average Correct Based on Experience")
 
-#average correct responses based on course experience
-experience <- aggregate(answers_demographics$V10, list(answers_demographics$pre2), FUN=mean)
+pre2_bar <- ggplot(accuracy_pre2, aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") +
+  geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Coursework")
+pre2_box <- ggplot(filter(answers_demographics, pre2!="null"), aes(x=pre2, y=V9, fill=pre2)) + geom_boxplot() + xlab("Courses completed") + ylab("") +
+  theme(legend.position="none")
 
-experience_bar <- ggplot(experience, aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") +
-      geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Coursework")
-experience_box <- ggplot(answers_demographics, aes(x=pre2, y=V10, fill=pre2)) + geom_boxplot() + xlab("Courses completed") + ylab("") +
-      theme(legend.position="none")
+pre3_bar <- ggplot(accuracy_pre3, aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") + ylab("Avg. Correct") +
+  geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Experience")
+pre3_box <- ggplot(filter(answers_demographics, pre3!="null"), aes(x=pre3, y=V9, fill=pre3)) + geom_boxplot() + xlab("Seen q-q plot?") + ylab("") +
+  theme(legend.position="none")
+
+
+grid.arrange(pre1_bar, pre1_box)
+grid.arrange(pre2_bar, pre2_box)
+grid.arrange(pre3_bar, pre3_box)
+
+temp2 <- filter(answers_demographics, pre3 != "null")
+temp2$pre3group <- if_else(temp2$pre3 == "yes", "yes", "no/unsure")
+temp2
+
+table(answers_demographics$pre2)
+
+temp <- filter(answers_demographics, pre2 != "null")
+out <- aov(temp$V9~temp$pre2)
+summary(out)
+
+out2 <- aov(temp2$V9~temp2$pre2)
+summary(out2)
+
+temp2 <- filter(answers_demographics, pre3 != "null")
+temp2$pre3group <- if_else(temp2$pre3 == "yes", "yes", "no/unsure")
+
+joined <- inner_join(answers_demographics, survey_order, by="userID")
+s1 <- 
+
 
 #average correct responses based on 'have you seen a q-q plot before?'
 exposure <- aggregate(answers_demographics$V10, list(answers_demographics$pre3), FUN=mean)
