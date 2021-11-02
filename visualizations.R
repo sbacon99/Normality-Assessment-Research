@@ -86,8 +86,9 @@ temp2 <- filter(answers_demographics, pre3 != "null")
 temp2$pre3group <- if_else(temp2$pre3 == "yes", "yes", "no/unsure")
 
 joined <- inner_join(answers_demographics, survey_order, by="userID")
-s1 <- 
-
+s1 <- ggplot(joined, aes(x=survey1_ord, y=survey1_dist)) + geom_bar(position=position_dodge()) + theme(legend.position="none") + ylab("Avg. Correct") +
+  geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Experience")
+s1
 
 #average correct responses based on 'have you seen a q-q plot before?'
 exposure <- aggregate(answers_demographics$V10, list(answers_demographics$pre3), FUN=mean)
