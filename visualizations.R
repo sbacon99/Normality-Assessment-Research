@@ -1,4 +1,4 @@
-# Pilot study data
+# Final data visualizations
 
 #libraries
 install.packages("gridExtra")
@@ -69,17 +69,19 @@ grid.arrange(pre1_bar, pre1_box)
 grid.arrange(pre2_bar, pre2_box)
 grid.arrange(pre3_bar, pre3_box)
 
-temp2 <- filter(answers_demographics, pre3 != "null")
-temp2$pre3group <- if_else(temp2$pre3 == "yes", "yes", "no/unsure")
-temp2
 
-table(answers_demographics$pre2)
 
-temp <- filter(answers_demographics, pre2 != "null")
-out <- aov(temp$V9~temp$pre2)
-summary(out)
+pre3grouped <- filter(answers_demographics, pre3 != "null")
+pre3grouped$pre3group <- if_else(temp2$pre3 == "yes", "yes", "no/unsure")
+pre3out <- aov(pre3grouped$V9~pre3grouped$pre2)
+summary(pre3out)
 
-out2 <- aov(temp2$V9~temp2$pre2)
+
+pre2filter <- filter(answers_demographics, pre2 != "null")
+pre2out <- aov(pre2filter$V9~pre2filter$pre2)
+summary(pre2out)
+
+out2 <- aov(pre2filter$V9~pre2filter$pre2)
 summary(out2)
 
 temp2 <- filter(answers_demographics, pre3 != "null")
