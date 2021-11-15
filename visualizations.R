@@ -44,20 +44,190 @@ for (i in 1:nrow(final_survey)) {
 
 answers_demographics <- cbind(final_pre,x)
 
+p1_merge <- merge(x=final_survey,y=survey_order,by="userID")
+
+survey_order[1,2:9]
+
+survey_order$normNoFeaturesCount <- 0
+survey_order$normRefLineCount <- 0
+survey_order$normBandsCount <- 0
+survey_order$noFeaturesCount <- 0
+survey_order$refLineCount <- 0
+survey_order$bandsCount <- 0
+
+for (j in 1:nrow(survey_order)){
+  for (i in 2:9){
+    if (survey_order[j,i] == 3){
+      survey_order[j,]$bandsCount <- survey_order[j,]$bandsCount +1
+    }
+    if (survey_order[j,i] == 2){
+      survey_order[j,]$refLineCount <- survey_order[j,]$refLineCount +1
+    }
+    if (survey_order[j,i] == 1){
+      survey_order[j,]$noFeaturesCount <- survey_order[j,]$noFeaturesCount +1
+    }
+  }
+}
+
+merge <- merge(x=final_survey,y=survey_order,by="userID")
+
+sum(merge$bandsCount)
+sum(merge$refLineCount)
+sum(merge$noFeaturesCount)
+
+
+for (j in 1:nrow(merge)){
+  for (i in 3:10){
+    if (merge[j,i] == "normal" && merge[j,i+8] == 1){
+      merge[j,]$normNoFeaturesCount = merge[j,]$normNoFeaturesCount +1
+    }
+    if (merge[j,i] == "normal" && merge[j,i+8] == 2){
+      merge[j,]$normRefLineCount = merge[j,]$normRefLineCount +1
+    }
+    if (merge[j,i] == "normal" && merge[j,i+8] == 3){
+      merge[j,]$normBandsCount = merge[j,]$normBandsCount +1
+    }
+  }
+}
+sum(merge$normNoFeaturesCount)
+sum(merge$normRefLineCount)
+sum(merge$normBandsCount)
+
+merge$noFeaturesNormCount2 <- 0
+merge$refLineNormCount2 <- 0
+merge$bandsNormCount2 <- 0
+
+merge$noFeaturesNonNormCount2 <- 0
+merge$refLineNonNormCount2 <- 0
+merge$bandsNonNormCount2 <- 0
+
+for (i in 1:123){
+  if (merge[i,6] == "normal" && merge[i,14] == 1){
+    merge[i,]$noFeaturesNormCount2 <- merge[i,]$noFeaturesNormCount2+1
+  }
+  if (merge[i,6] == "non-normal" && merge[i,14] == 1){
+    merge[i,]$noFeaturesNonNormCount2 <- merge[i,]$noFeaturesNonNormCount2+1
+  }
+  if (merge[i,6] == "normal" && merge[i,14] == 2){
+    merge[i,]$refLineNormCount2 <- merge[i,]$refLineNormCount2+1
+  }
+  if (merge[i,6] == "non-normal" && merge[i,14] == 2){
+    merge[i,]$refLineNonNormCount2 <- merge[i,]$refLineNonNormCount2+1
+  }
+  if (merge[i,6] == "normal" && merge[i,14] == 3){
+    merge[i,]$bandsNormCount2 <- merge[i,]$bandsNormCount2+1
+  }
+  if (merge[i,6] == "non-normal" && merge[i,14] == 3){
+    merge[i,]$bandsNonNormCount2 <- merge[i,]$bandsNonNormCount2+1
+  }
+}
+
+sum(merge$noFeaturesNormCount2)
+sum(merge$noFeaturesNonNormCount2)
+sum(merge$refLineNormCount2)
+sum(merge$refLineNonNormCount2)
+sum(merge$bandsNormCount2)
+sum(merge$bandsNonNormCount2)
+
+merge$noFeatureCount4 <- 0
+merge$refLineCount4 <- 0
+merge$bandCount4 <- 0
+
+for (i in 1:123){
+  if (merge[i,12] == 1){
+    merge[i,]$noFeatureCount4 <- merge[i,]$noFeatureCount4+1
+  }
+  if (merge[i,12] == 2){
+    merge[i,]$refLineCount4 <- merge[i,]$refLineCount4+1
+  }
+  if (merge[i,12] == 3){
+    merge[i,]$bandCount4 <- merge[i,]$bandCount4+1
+  }
+}
+
+sum(merge$noFeatureCount4)
+sum(merge$refLineCount4)
+sum(merge$bandCount4)
+
+p <- ggplot(answers_demographics[answers_demographics$pre1 != "null",], aes(x = pre1, y = V9)) + geom_boxplot() + geom_point(position = "jitter")
+p + xlab("Experience Level") + ylab("Average Correct Responses")
+
+nrow(answers_demographics[answers_demographics$pre1 == "undergraduate",])
+nrow(answers_demographics[answers_demographics$pre1 == "graduate",])
+nrow(answers_demographics[answers_demographics$pre1 == "professional",])
+
+
+curr <- select(final_survey, -survey0_dist)
+curr$outliersAllCorrect <- 0
+curr$outliers1Correct <- 0
+curr$outliers0Correct <- 0
+curr$noOutliersAllCorrect <- 0
+curr$noOutliers1Correct <- 0
+curr$noOutliers0Correct <- 0
+
+for (i in 1:123){
+  # outliers
+  if (curr[i,4] == "normal" && curr[i,9] == "normal"){
+    curr[i,]$outliersAllCorrect <- curr[i,]$outliersAllCorrect +1
+  }
+  if (curr[i,4] == "normal" && curr[i,9] != "normal"){
+    curr[i,]$outliers1Correct <- curr[i,]$outliers1Correct +1
+  }
+  if (curr[i,4] != "normal" && curr[i,9] == "normal"){
+    curr[i,]$outliers1Correct <- curr[i,]$outliers1Correct +1
+  }
+  if (curr[i,4] != "normal" && curr[i,9] != "normal"){
+    curr[i,]$outliers0Correct <- curr[i,]$outliers0Correct +1
+  }
+  # no outliers
+  if (curr[i,2] == "normal" && curr[i,6] == "normal"){
+    curr[i,]$noOutliersAllCorrect <- curr[i,]$noOutliersAllCorrect +1
+  }
+  if (curr[i,2] == "normal" && curr[i,6] != "normal"){
+    curr[i,]$noOutliers1Correct <- curr[i,]$noOutliers1Correct +1
+  }
+  if (curr[i,2] != "normal" && curr[i,6] == "normal"){
+    curr[i,]$noOutliers1Correct <- curr[i,]$noOutliers1Correct +1
+  }
+  if (curr[i,2] != "normal" && curr[i,6] != "normal"){
+    curr[i,]$noOutliers0Correct <- curr[i,]$noOutliers0Correct +1
+  }
+  
+}
+
+type <- c(rep("no outliers\n(plots 1 and 5)" , 3) , rep("outliers\n(plots 3 and 8)" , 3))
+score <- rep(c("all correct" , "1 correct" , "0 correct"), 2)
+value <- c(sum(curr$noOutliersAllCorrect), sum(curr$noOutliers1Correct), sum(curr$noOutliers0Correct), sum(curr$outliersAllCorrect), sum(curr$outliers1Correct), sum(curr$outliers0Correct))
+data <- data.frame(type,score,value)
+
+p2 <- ggplot(data, aes(fill=score, y=value, x=type)) + 
+  geom_bar(position="dodge", stat="identity") + ylab("Score") + xlab("") + geom_text(position="dodge", stat="identity", label = value)
+p2
+
 # average correct responses based on demographics
+
+  # demographic question #1
 accuracy_pre1 <- aggregate(answers_demographics$V9, list(answers_demographics$pre1), FUN=mean)[-2,]
-accuracy_pre2 <- aggregate(answers_demographics$V9, list(answers_demographics$pre2), FUN=mean)[-4,]
-accuracy_pre3 <- aggregate(answers_demographics$V9, list(answers_demographics$pre3), FUN=mean)[-3,]
 
 pre1_bar <- ggplot(accuracy_pre1, aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") + ylab("Avg. Correct") + xlab("Current Status") + 
       geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Experience")
 pre1_box <- ggplot(filter(answers_demographics, pre1!="null"), aes(x=pre1, y=V9, fill=pre1)) + geom_boxplot() + xlab("Experience level") + ylab("") +
       theme(legend.position="none") + ggtitle("Average Correct Based on Experience")
 
+
+  # demographic question #2
+accuracy_pre2 <- aggregate(answers_demographics$V9, list(answers_demographics$pre2), FUN=mean)[-4,]
+
 pre2_bar <- ggplot(accuracy_pre2, aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") +
   geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Coursework")
 pre2_box <- ggplot(filter(answers_demographics, pre2!="null"), aes(x=pre2, y=V9, fill=pre2)) + geom_boxplot() + xlab("Courses completed") + ylab("") +
   theme(legend.position="none")
+
+  # demographic quesiton #3
+accuracy_pre3 <- aggregate(answers_demographics$V9, list(answers_demographics$pre3), FUN=mean)[-3,]
+
+pre3grouped <- filter(answers_demographics, pre3 != "null")
+pre3grouped$pre3group <- if_else(pre3grouped$pre3 == "yes", "yes", "no/unsure")
 
 pre3_bar <- ggplot(accuracy_pre3, aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") + ylab("Avg. Correct") +
   geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Experience")
@@ -71,8 +241,7 @@ grid.arrange(pre3_bar, pre3_box)
 
 
 
-pre3grouped <- filter(answers_demographics, pre3 != "null")
-pre3grouped$pre3group <- if_else(temp2$pre3 == "yes", "yes", "no/unsure")
+
 pre3out <- aov(pre3grouped$V9~pre3grouped$pre2)
 summary(pre3out)
 

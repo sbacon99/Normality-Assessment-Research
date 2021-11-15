@@ -1,13 +1,16 @@
 # Samples (FINAL)
 
+
+# packages
 install.packages("ggplot2")
-library(ggplot2)
 install.packages('qqplotr')
-library(qqplotr)
 install.packages('e1071')
-library(e1071)
 install.packages("gridExtra")
+
 library(gridExtra)
+library(ggplot2)
+library(qqplotr)
+library(e1071)
 
 
 
