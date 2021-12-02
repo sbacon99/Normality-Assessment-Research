@@ -69,6 +69,9 @@ Dataset1bands
 shapiro.test(normVector1)
 t.test(normVector1)
 
+grid.arrange(Dataset1noRef, Dataset1ref, nrow = 1)
+
+
 # DATASET 2 (Graph 2)
 set.seed(4321)
 fFrame2 <- data.frame(value = rf(30, 3, 10))
