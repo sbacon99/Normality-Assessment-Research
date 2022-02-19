@@ -1,8 +1,5 @@
-# An incentive survey (PILOT)
-# Sam Bacon
-
-#install.packages("shinydashboard")
-#install.packages("shinythemes")
+install.packages("shinydashboard")
+install.packages("shinythemes")
 
 library(shiny)
 library(shinythemes)

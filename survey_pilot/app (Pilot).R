@@ -619,9 +619,6 @@ server <- function(input, output) {
         else{
         }
     })
-
-
 }
 
-# Run the application 
 shinyApp(ui = ui, server = server)

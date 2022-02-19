@@ -1,46 +1,14 @@
-# Samples (FINAL)
-
-
 # packages
 install.packages("ggplot2")
 install.packages('qqplotr')
 install.packages('e1071')
 install.packages("gridExtra")
 
+# libraries
 library(gridExtra)
 library(ggplot2)
 library(qqplotr)
 library(e1071)
-
-
-
-test1 <- data.frame(value = runif(20, 10, 20))
-f1 <- test1$value
-shapiro.test(f1)
-
-test2 <- data.frame(value = runif(20, 10, 20))
-f2 <- test2$value
-shapiro.test(f2)
-
-
-
-ref1 <- ggplot(data = test1, mapping = aes(sample = value)) +
-  stat_qq_point(colour = "black") +
-  stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")+ coord_cartesian(ylim = c(5,25)) +
-  annotate("text", x=12, y=23, label= "W = 0.90 ")
-
-ref2 <- ggplot(data = test2, mapping = aes(sample = value)) +
-  stat_qq_point(colour = "black") +
-  stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")+ coord_cartesian(ylim = c(5,25)) + 
-  annotate("text", x=11, y=23, label= "W = 0.90")
-
-grid.arrange(ref1, ref2, nrow = 1)
-
-
-
-
 
 # DATASET 0 (graph 0)
 set.seed(21)
@@ -349,4 +317,13 @@ unif2PofP
 grid.arrange(normPofP, fPofP, unifPofP, norm2PofP, f2PofP, unif2PofP, nrow = 2)
 grid.arrange(norm2PofP, f2PofP, unif2PofP, nrow = 1)
 
+grid.arrange(Dataset1noRef, Dataset1ref, Dataset1bands, nrow = 1)
+grid.arrange(Dataset2noRef, Dataset2ref, Dataset2bands, nrow = 1)
+grid.arrange(Dataset3noRef, Dataset3ref, Dataset3bands, nrow = 1)
+grid.arrange(Dataset4noRef, Dataset4ref, Dataset4bands, nrow = 1)
+grid.arrange(Dataset5noRef, Dataset5ref, Dataset5bands, nrow = 1)
+grid.arrange(Dataset6noRef, Dataset6ref, Dataset6bands, nrow = 1)
+grid.arrange(Dataset7noRef_2, Dataset7ref_2, Dataset7bands_2, nrow = 1)
+grid.arrange(Dataset8noRef_2, Dataset8ref_2, Dataset8bands_2, nrow = 1)
 
+grid.arrange(Dataset3bands, Dataset6bands, Dataset7bands, Dataset8bands, nrow = 2)

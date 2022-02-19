@@ -1,12 +1,9 @@
 # A survey designed to present a variety of Q-Q Plots to survey participants for
 # normality assessment
-
 # (FINAL - for research)
 
-# Created by Sam Bacon
-
-#install.packages("shinydashboard")
-#install.packages("shinythemes")
+install.packages("shinydashboard")
+install.packages("shinythemes")
 
 library(shiny)
 library(shinythemes)
@@ -626,6 +623,5 @@ server <- function(input, output, session) {
     
     
 }
-
-# Run the application 
 shinyApp(ui = ui, server = server)
+

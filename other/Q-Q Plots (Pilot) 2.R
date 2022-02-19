@@ -1,16 +1,11 @@
-install.packages('ggplot2')
-install.packages('qqplotr')
-install.packages('e1071')
-install.packages("gridExtra")
-install.packages("grid")
-install.packages("gridtext")
+# Samples (PILOT)
 
+install.packages('ggplot2')
 library(ggplot2)
+install.packages('qqplotr')
 library(qqplotr)
+install.packages('e1071')
 library(e1071)
-library(grid)
-library(gridExtra)
-library(gridtext)
 
 # All confidence bands are POINTWISE bands
 
@@ -51,20 +46,20 @@ normVector1 <- normFrame1$value
 
 Dataset1noRef <- ggplot(data = normFrame1, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Neither") +
   theme(plot.title = element_text(size = 10))
 
 Dataset1ref <- ggplot(data = normFrame1, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Reference Line") +
   theme(plot.title = element_text(size = 10))
 
 Dataset1bands <- ggplot(data = normFrame1, mapping = aes(sample = value)) +
   stat_qq_band(identity = FALSE, fill = "pink") +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Ref. Line and Bands") +
   theme(plot.title = element_text(size = 10))
 
 Dataset1noRef
@@ -74,7 +69,7 @@ Dataset1bands
 shapiro.test(normVector1)
 t.test(normVector1)
 
-grid.arrange(Dataset3noRef, Dataset3bands, nrow = 1)
+grid.arrange(Dataset1noRef, Dataset1ref, nrow = 1)
 
 
 # DATASET 2 (Graph 2)
@@ -84,20 +79,20 @@ fVector2 <- fFrame2$value
 
 Dataset2noRef <- ggplot(data = fFrame2, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Neither") +
   theme(plot.title = element_text(size = 10))
 
 Dataset2ref <- ggplot(data = fFrame2, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Reference Line") +
   theme(plot.title = element_text(size = 10))
 
 Dataset2bands <- ggplot(data = fFrame2, mapping = aes(sample = value)) +
   stat_qq_band(identity = FALSE, fill = "pink") +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + 
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Ref. Line and Bands") +
   theme(plot.title = element_text(size = 10))
 
 Dataset2noRef
@@ -114,20 +109,20 @@ normVector3 <- normFrame3$value
 
 Dataset3noRef <- ggplot(data = normFrame3, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + coord_cartesian(ylim = c(-15,32)) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Neither") +
   theme(plot.title = element_text(size = 10))
 
 Dataset3ref <- ggplot(data = normFrame3, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + coord_cartesian(ylim = c(-15,32)) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Reference Line") +
   theme(plot.title = element_text(size = 10))
 
 Dataset3bands <- ggplot(data = normFrame3, mapping = aes(sample = value)) +
   stat_qq_band(identity = FALSE, fill = "pink") +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + coord_cartesian(ylim = c(-15,32)) +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Ref. Line and Bands") +
   theme(plot.title = element_text(size = 10))
 
 Dataset3noRef
@@ -144,20 +139,20 @@ unifVector4 <- unifFrame4$value
 
 Dataset4noRef <- ggplot(data = unifFrame4, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Neither") +
   theme(plot.title = element_text(size = 10))
 
 Dataset4ref <- ggplot(data = unifFrame4, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Reference Line") +
   theme(plot.title = element_text(size = 10))
 
 Dataset4bands <- ggplot(data = unifFrame4, mapping = aes(sample = value)) +
   stat_qq_band(identity = FALSE, fill = "pink") +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Ref. Line and Bands") +
   theme(plot.title = element_text(size = 10))
 
 Dataset4noRef
@@ -174,20 +169,20 @@ normVector5 <- normFrame5$value
 
 Dataset5noRef <- ggplot(data = normFrame5, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Neither") +
   theme(plot.title = element_text(size = 10))
 
 Dataset5ref <- ggplot(data = normFrame5, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Reference Line") +
   theme(plot.title = element_text(size = 10))
 
 Dataset5bands <- ggplot(data = normFrame5, mapping = aes(sample = value)) +
   stat_qq_band(identity = FALSE, fill = "pink") +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Ref. Line and Bands") +
   theme(plot.title = element_text(size = 10))
 
 Dataset5noRef
@@ -204,20 +199,20 @@ unifVector6 <- unifFrame6$value
 
 Dataset6noRef <- ggplot(data = unifFrame6, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Neither") +
   theme(plot.title = element_text(size = 10))
 
 Dataset6ref <- ggplot(data = unifFrame6, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + 
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Reference Line") +
   theme(plot.title = element_text(size = 10))
 
 Dataset6bands <- ggplot(data = unifFrame6, mapping = aes(sample = value)) +
   stat_qq_band(identity = FALSE, fill = "pink") +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + 
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Ref. Line and Bands") +
   theme(plot.title = element_text(size = 10))
 
 Dataset6noRef
@@ -235,20 +230,20 @@ fVector7_2 <- fFrame7_2$value
 
 Dataset7noRef_2 <- ggplot(data = fFrame7_2, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")  +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Neither") +
   theme(plot.title = element_text(size = 10))
 
 Dataset7ref_2 <- ggplot(data = fFrame7_2, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")  +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Reference Line") +
   theme(plot.title = element_text(size = 10))
 
 Dataset7bands_2 <- ggplot(data = fFrame7_2, mapping = aes(sample = value)) +
   stat_qq_band(identity = FALSE, fill = "pink") +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")  +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Ref. Line and Bands") +
   theme(plot.title = element_text(size = 10))
 
 Dataset7noRef_2
@@ -266,20 +261,20 @@ normVector8_2 <- normFrame8_2$value
 
 Dataset8noRef_2 <- ggplot(data = normFrame8_2, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")  +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Neither") +
   theme(plot.title = element_text(size = 10))
 
 Dataset8ref_2 <- ggplot(data = normFrame8_2, mapping = aes(sample = value)) +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Reference Line") +
   theme(plot.title = element_text(size = 10))
 
 Dataset8bands_2 <- ggplot(data = normFrame8_2, mapping = aes(sample = value)) +
   stat_qq_band(identity = FALSE, fill = "pink") +
   stat_qq_point(colour = "black") +
   stat_qq_line(identity = FALSE) +
-  labs(x = "Theoretical Quantiles", y = "Sample Quantiles")  +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") + ggtitle("Ref. Line and Bands") +
   theme(plot.title = element_text(size = 10))
 
 Dataset8noRef_2
@@ -289,12 +284,3 @@ Dataset8bands_2
 shapiro.test(normVector8_2)
 t.test(normVector8_2)
 
-
-grid.arrange(Dataset1noRef, Dataset1ref, Dataset1bands, nrow = 1)
-grid.arrange(Dataset2noRef, Dataset2ref, Dataset2bands, nrow = 1)
-grid.arrange(Dataset3noRef, Dataset3ref, Dataset3bands, nrow = 1)
-grid.arrange(Dataset4noRef, Dataset4ref, Dataset4bands, nrow = 1)
-grid.arrange(Dataset5noRef, Dataset5ref, Dataset5bands, nrow = 1)
-grid.arrange(Dataset6noRef, Dataset6ref, Dataset6bands, nrow = 1)
-grid.arrange(Dataset7noRef_2, Dataset7ref_2, Dataset7bands_2, nrow = 1)
-grid.arrange(Dataset8noRef_2, Dataset8ref_2, Dataset8bands_2, nrow = 1)

@@ -1,8 +1,5 @@
-# incentive survey (FINAL)
-# Sam Bacon
-
-#install.packages("shinydashboard")
-#install.packages("shinythemes")
+install.packages("shinydashboard")
+install.packages("shinythemes")
 
 library(shiny)
 library(shinythemes)
@@ -54,6 +51,7 @@ server <- function(input, output) {
             output<- "Incentive code is valid. Click 'submit' below to complete the survey."
             paste(output)
         }
+        
         else if(!criteria1 && criteria2){
             output <- "Sorry. The code you have entered is invalid."
             paste(output)
@@ -63,10 +61,10 @@ server <- function(input, output) {
             output <- "Sorry. This code has already been redeemed."
             paste(output)
         }
+        
         else{
         }
     })
 }
 
-# Run the application 
 shinyApp(ui = ui, server = server)

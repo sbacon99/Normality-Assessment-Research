@@ -1,4 +1,5 @@
-# Final data visualizations
+# FINAL DATA VISUALIZATIONS
+# Updated 2/3/2022
 
 #libraries
 install.packages("gridExtra")
@@ -8,6 +9,8 @@ install.packages("ggplot2")
 install.packages("googlesheets4")
 install.packages('dplyr')
 install.packages("reshape2")
+install.packages("janitor")
+install.packages("multcomp")
 
 library(grid)
 library(gridExtra)
@@ -17,661 +20,546 @@ library(googlesheets4)
 library(dplyr)
 library(reshape2)
 library(tidyr)
+library(janitor)
+library(multcomp)
 
+# dataframes created in this script...
+# (d1) df_correct_responses: table of correct responses by userID
+# (d2) df_answers_demographics: contains userID, demographic questions, 
+#                           individual correct responses, and total count
+#                           of correct responses
+# (d3) df_dem1_counts: response counts grouped by Experience
+# (d4) df_dem2_counts response counts grouped by Courses Completed
+# (d5) df_dem3_counts response counts grouped by "Seen a Q-Q Plot?"
+# (d6) df_dem1_table: table of average correct responses based on Experience Level (dem.1)
+# (d7) df_dem2_table: table of average correct responses based on Courses Completed (dem.2)
+# (d8) df_dem3_table: table of average correct responses based on "Seen a Q-Q Plot?" (dem.3)
+# (d9) df_plot_variations: table of plot variation totals for each userID; overall totals at bottom
+#                                 responses based on variations
+# (d10) df_correct_by_variation: table of total correct based on plot variation (includes totals)
+# (d11) df_incorrect_by_variation: table of total incorrect based on plot variation (totals included)
+# (d12) df_responses_by_variation: table of 'normal' responses and total
+#                                  based on variation
+# (d13) df_outlier_comparison_normal: comparing responses for normal distributions,
+#                                     outliers (p1 and p5) vs. no outliers (p3 and p8)
+# (d14) df_outlier_comparison_uniform: comparing responses for uniform distributions,
+#                                     outliers (p6) vs. no outliers (p4)
+# (d15) df_outlier_comparison_f: comparing responses for f distributions, outliers (p7) vs. no outliers (p2)
+# (d16) df_correct_chisq: ANSWERING Q1; contains chi-sq values of correct responses for all 8 plots
+# (d17) df_incorrect_chisq: ANSWERING Q1: contains chi-sq values of incorrect responses for all 8 plots
+# (d18) anova_experience_level: ANSWERING Q2; anova for correct responses based on exp.
+ 
+# visualizations created in this script...
+# (v1) dem1_bar: average correct responses based on Experience level (dem.1)
+# (v2) dem1_box: average correct responses based on Experience level (dem.1)
+# (v3) dem1_combo: grid.arrange of v1 and v2
+# (v4) dem2_bar: average correct responses based on Courses Completed (dem.2)
+# (v5) dem2_box: average correct responses based on Courses Completed (dem.2)
+# (v6) dem2_combo: grid.arrange of v4 and v5
+# (v7) dem3_bar: average correct responses based on "Seen a Q-Q Plot?" (dem.3)
+# (v8) dem3_box: average correct responses based on "Seen a Q-Q Plot?" (dem.3)
+# (v9) dem3_combo: grid.arrange of v7 and v8
 
-# raw data
+############
+# raw data #
+############
 final_pre <- read_sheet("https://docs.google.com/spreadsheets/d/1cTMfOSR_l9S57YTX_i1SXhJvl0SVcVbU550NJD8OHSw/edit#gid=1629775005", sheet = "pre_survey")
 final_survey <- read_sheet("https://docs.google.com/spreadsheets/d/1cTMfOSR_l9S57YTX_i1SXhJvl0SVcVbU550NJD8OHSw/edit#gid=1629775005", sheet = "survey")
 post_survey <- read_sheet("https://docs.google.com/spreadsheets/d/1cTMfOSR_l9S57YTX_i1SXhJvl0SVcVbU550NJD8OHSw/edit#gid=1629775005", sheet = "post_survey" )
 survey_order <- read_sheet("https://docs.google.com/spreadsheets/d/1cTMfOSR_l9S57YTX_i1SXhJvl0SVcVbU550NJD8OHSw/edit#gid=1629775005", sheet = "survey_order")
 
-# solutions
-correct_test <- c("normal","normal","non-normal","normal","non-normal","normal","non-normal","non-normal","normal")
-correct_notest <- c("normal","non-normal","normal","non-normal","normal","non-normal","non-normal","normal")
+#############
+# solutions #
+#############
+correct <- c("normal","non-normal","normal","non-normal","normal","non-normal","non-normal","normal")
+distributions <- c("normal","f","normal","uniform","normal","uniform","f","normal")
+outliers <- c("no","no","yes","no","no","yes","yes","yes")
 
-correct2_test <- c("normal","normal","f","normal","uniform","normal","uniform","f","normal")
+##############
+# dataframes #
+##############
 
-outliers_test <- c("no","no","no","yes","no","no","yes","yes","yes")
-
-# create answers_demographics table (demographics + responses)
+# d1 #
 x <- data.frame(zero=logical(),one=logical(),two=logical(),three=logical(),four=logical(),five=logical(),six=logical(),seven=logical())
 
 for (i in 1:nrow(final_survey)) {
-  comparison <- select(final_survey, -c(userID, survey0_dist))[i,] == correct_notest
+  comparison <- subset(final_survey[i,], select = -c(userID, survey0_dist)) == correct
   total <- cbind(comparison, sum(comparison==TRUE))
   x <- rbind(x,total)
 }
 
-answers_demographics <- cbind(final_pre,x)
+colnames(x)[colnames(x) == "V9"] <- "Total_Correct"
+df_correct_responses <- cbind(final_pre[,1], x)
 
-p1_merge <- merge(x=final_survey,y=survey_order,by="userID")
+# d2 #
+df_answers_demographics <- cbind(final_pre, x)
 
-survey_order[1,2:9]
+# d3 #
+df_dem1_counts <- table(df_answers_demographics$pre1)
 
-survey_order$normNoFeaturesCount <- 0
-survey_order$normRefLineCount <- 0
-survey_order$normBandsCount <- 0
-survey_order$noFeaturesCount <- 0
-survey_order$refLineCount <- 0
-survey_order$bandsCount <- 0
+# d4 #
+df_dem2_counts <- table(df_answers_demographics$pre2)
 
-for (j in 1:nrow(survey_order)){
-  for (i in 2:9){
-    if (survey_order[j,i] == 3){
-      survey_order[j,]$bandsCount <- survey_order[j,]$bandsCount +1
+# d5 #
+df_dem3_counts <- table(df_answers_demographics$pre3)
+
+# d6 #
+df_dem1_table <- aggregate(df_answers_demographics$"Total_Correct", list(df_answers_demographics$pre1), FUN=mean)[-2,] # last bit removes "null" responses
+
+# d7 #
+df_dem2_table <- aggregate(df_answers_demographics$"Total_Correct", list(df_answers_demographics$pre2), FUN=mean)[-4,]
+
+# d8 #
+df_dem3_table <- aggregate(df_answers_demographics$"Total_Correct", list(df_answers_demographics$pre3), FUN=mean)[-3,]
+
+# d9 #
+x2 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = -c(survey0_dist))
+
+x2$noFeaturesCount <- 0
+x2$refLineCount <- 0
+x2$bandsCount <- 0
+
+for (j in 1:nrow(x2)){
+  for (i in 10:17){
+    if (x2[j,i] == 3){
+      x2[j,]$bandsCount <- x2[j,]$bandsCount +1
     }
-    if (survey_order[j,i] == 2){
-      survey_order[j,]$refLineCount <- survey_order[j,]$refLineCount +1
+    if (x2[j,i] == 2){
+      x2[j,]$refLineCount <- x2[j,]$refLineCount +1
     }
-    if (survey_order[j,i] == 1){
-      survey_order[j,]$noFeaturesCount <- survey_order[j,]$noFeaturesCount +1
+    if (x2[j,i] == 1){
+      x2[j,]$noFeaturesCount <- x2[j,]$noFeaturesCount +1
+    }
+  }
+}
+
+df_plot_variations = x2[-c(2:17)]
+df_plot_variations <- df_plot_variations %>% adorn_totals("row")
+
+# d10 #
+x3 <- subset(merge(x=df_correct_responses,y=survey_order, by="userID"))
+
+x3$noFeaturesCorrect <- 0
+x3$refLineCorrect <- 0
+x3$bandsCorrect <- 0
+
+for (i in 1:nrow(x3)){ # iterating through all rows
+  for (j in 2:9){
+    if (x3[i,j] == 1){
+      if (x3[i,j+9] == 1){
+        x3[i,]$noFeaturesCorrect <- x3[i,]$noFeaturesCorrect + 1
+      }
+      if (x3[i,j+9] == 2){
+        x3[i,]$refLineCorrect <- x3[i,]$refLineCorrect + 1
+      }
+      if (x3[i,j+9] == 3){
+        x3[i,]$bandsCorrect <- x3[i,]$bandsCorrect + 1
+      }
     }
   }
 }
 
-merge <- merge(x=final_survey,y=survey_order,by="userID")
+df_correct_by_variation <- subset(x3, select = c(userID, noFeaturesCorrect, refLineCorrect, bandsCorrect))
+df_correct_by_variation <- merge(df_correct_by_variation, df_plot_variations, by = "userID")
+df_correct_by_variation <- df_correct_by_variation %>% adorn_totals("row")
 
-sum(merge$bandsCount)
-sum(merge$refLineCount)
-sum(merge$noFeaturesCount)
+# d11 #
+x3 <- subset(merge(x=df_correct_responses,y=survey_order, by="userID"))
 
+x3$noFeaturesCorrect <- 0
+x3$refLineCorrect <- 0
+x3$bandsCorrect <- 0
 
-for (j in 1:nrow(merge)){
-  for (i in 3:10){
-    if (merge[j,i] == "normal" && merge[j,i+8] == 1){
-      merge[j,]$normNoFeaturesCount = merge[j,]$normNoFeaturesCount +1
-    }
-    if (merge[j,i] == "normal" && merge[j,i+8] == 2){
-      merge[j,]$normRefLineCount = merge[j,]$normRefLineCount +1
-    }
-    if (merge[j,i] == "normal" && merge[j,i+8] == 3){
-      merge[j,]$normBandsCount = merge[j,]$normBandsCount +1
+for (i in 1:nrow(x3)){ # iterating through all rows
+  for (j in 2:9){
+    if (x3[i,j] == 0){
+      if (x3[i,j+9] == 1){
+        x3[i,]$noFeaturesCorrect <- x3[i,]$noFeaturesCorrect + 1
+      }
+      if (x3[i,j+9] == 2){
+        x3[i,]$refLineCorrect <- x3[i,]$refLineCorrect + 1
+      }
+      if (x3[i,j+9] == 3){
+        x3[i,]$bandsCorrect <- x3[i,]$bandsCorrect + 1
+      }
     }
   }
 }
-sum(merge$normNoFeaturesCount)
-sum(merge$normRefLineCount)
-sum(merge$normBandsCount)
 
-merge$noFeaturesNormCount2 <- 0
-merge$refLineNormCount2 <- 0
-merge$bandsNormCount2 <- 0
+df_incorrect_by_variation <- subset(x3, select = c(userID, noFeaturesCorrect, refLineCorrect, bandsCorrect))
+df_incorrect_by_variation <- merge(df_incorrect_by_variation, df_plot_variations, by = "userID")
+df_incorrect_by_variation <- df_incorrect_by_variation %>% adorn_totals("row")
 
-merge$noFeaturesNonNormCount2 <- 0
-merge$refLineNonNormCount2 <- 0
-merge$bandsNonNormCount2 <- 0
 
-for (i in 1:123){
-  if (merge[i,6] == "normal" && merge[i,14] == 1){
-    merge[i,]$noFeaturesNormCount2 <- merge[i,]$noFeaturesNormCount2+1
-  }
-  if (merge[i,6] == "non-normal" && merge[i,14] == 1){
-    merge[i,]$noFeaturesNonNormCount2 <- merge[i,]$noFeaturesNonNormCount2+1
-  }
-  if (merge[i,6] == "normal" && merge[i,14] == 2){
-    merge[i,]$refLineNormCount2 <- merge[i,]$refLineNormCount2+1
-  }
-  if (merge[i,6] == "non-normal" && merge[i,14] == 2){
-    merge[i,]$refLineNonNormCount2 <- merge[i,]$refLineNonNormCount2+1
-  }
-  if (merge[i,6] == "normal" && merge[i,14] == 3){
-    merge[i,]$bandsNormCount2 <- merge[i,]$bandsNormCount2+1
-  }
-  if (merge[i,6] == "non-normal" && merge[i,14] == 3){
-    merge[i,]$bandsNonNormCount2 <- merge[i,]$bandsNonNormCount2+1
+
+# d12 #
+x4 <- merge(x=subset(final_survey, select = -c(survey0_dist)), y=survey_order, by="userID")
+x4$normNoFeatures <- 0
+x4$normRefLine <- 0
+x4$normBands <- 0
+
+for (i in 1:nrow(x4)){ # iterating through all rows
+  for (j in 2:9){
+    if (x4[i,j] == "normal"){
+      if (x4[i,j+8] == 1){
+        x4[i,]$normNoFeatures <- x4[i,]$normNoFeatures + 1
+      }
+      if (x4[i,j+8] == 2){
+        x4[i,]$normRefLine <- x4[i,]$normRefLine + 1
+      }
+      if (x4[i,j+8] == 3){
+        x4[i,]$normBands <- x4[i,]$normBands + 1
+      }
+    }
   }
 }
 
-sum(merge$noFeaturesNormCount2)
-sum(merge$noFeaturesNonNormCount2)
-sum(merge$refLineNormCount2)
-sum(merge$refLineNonNormCount2)
-sum(merge$bandsNormCount2)
-sum(merge$bandsNonNormCount2)
+df_responses_by_variation <- subset(x4, select = c(userID, normNoFeatures, normRefLine, normBands))
+df_responses_by_variation <- df_responses_by_variation %>% adorn_totals("row")
 
-merge$noFeatureCount4 <- 0
-merge$refLineCount4 <- 0
-merge$bandCount4 <- 0
-
-for (i in 1:123){
-  if (merge[i,12] == 1){
-    merge[i,]$noFeatureCount4 <- merge[i,]$noFeatureCount4+1
-  }
-  if (merge[i,12] == 2){
-    merge[i,]$refLineCount4 <- merge[i,]$refLineCount4+1
-  }
-  if (merge[i,12] == 3){
-    merge[i,]$bandCount4 <- merge[i,]$bandCount4+1
-  }
-}
-
-sum(merge$noFeatureCount4)
-sum(merge$refLineCount4)
-sum(merge$bandCount4)
-
-p <- ggplot(answers_demographics[answers_demographics$pre1 != "null",], aes(x = pre1, y = V9)) + geom_boxplot() + geom_point(position = "jitter")
-p + xlab("Experience Level") + ylab("Average Correct Responses")
-
-nrow(answers_demographics[answers_demographics$pre1 == "undergraduate",])
-nrow(answers_demographics[answers_demographics$pre1 == "graduate",])
-nrow(answers_demographics[answers_demographics$pre1 == "professional",])
-
-
-curr <- select(final_survey, -survey0_dist)
-curr$outliersAllCorrect <- 0
-curr$outliers1Correct <- 0
-curr$outliers0Correct <- 0
-curr$noOutliersAllCorrect <- 0
-curr$noOutliers1Correct <- 0
-curr$noOutliers0Correct <- 0
+# d13 #
+x5 <- subset(final_survey, select = -c(survey0_dist))
+x5$outliersAllCorrect <- 0
+x5$outliers1Correct <- 0
+x5$outliers0Correct <- 0
+x5$noOutliersAllCorrect <- 0
+x5$noOutliers1Correct <- 0
+x5$noOutliers0Correct <- 0
 
 for (i in 1:123){
   # outliers
-  if (curr[i,4] == "normal" && curr[i,9] == "normal"){
-    curr[i,]$outliersAllCorrect <- curr[i,]$outliersAllCorrect +1
+  if (x5[i,4] == "normal" && x5[i,9] == "normal"){
+    x5[i,]$outliersAllCorrect <- x5[i,]$outliersAllCorrect +1
   }
-  if (curr[i,4] == "normal" && curr[i,9] != "normal"){
-    curr[i,]$outliers1Correct <- curr[i,]$outliers1Correct +1
+  if (x5[i,4] == "normal" && x5[i,9] != "normal"){
+    x5[i,]$outliers1Correct <- x5[i,]$outliers1Correct +1
   }
-  if (curr[i,4] != "normal" && curr[i,9] == "normal"){
-    curr[i,]$outliers1Correct <- curr[i,]$outliers1Correct +1
+  if (x5[i,4] != "normal" && x5[i,9] == "normal"){
+    x5[i,]$outliers1Correct <- x5[i,]$outliers1Correct +1
   }
-  if (curr[i,4] != "normal" && curr[i,9] != "normal"){
-    curr[i,]$outliers0Correct <- curr[i,]$outliers0Correct +1
+  if (x5[i,4] != "normal" && x5[i,9] != "normal"){
+    x5[i,]$outliers0Correct <- x5[i,]$outliers0Correct +1
   }
   # no outliers
-  if (curr[i,2] == "normal" && curr[i,6] == "normal"){
-    curr[i,]$noOutliersAllCorrect <- curr[i,]$noOutliersAllCorrect +1
+  if (x5[i,2] == "normal" && x5[i,6] == "normal"){
+    x5[i,]$noOutliersAllCorrect <- x5[i,]$noOutliersAllCorrect +1
   }
-  if (curr[i,2] == "normal" && curr[i,6] != "normal"){
-    curr[i,]$noOutliers1Correct <- curr[i,]$noOutliers1Correct +1
+  if (x5[i,2] == "normal" && x5[i,6] != "normal"){
+    x5[i,]$noOutliers1Correct <- x5[i,]$noOutliers1Correct +1
   }
-  if (curr[i,2] != "normal" && curr[i,6] == "normal"){
-    curr[i,]$noOutliers1Correct <- curr[i,]$noOutliers1Correct +1
+  if (x5[i,2] != "normal" && x5[i,6] == "normal"){
+    x5[i,]$noOutliers1Correct <- x5[i,]$noOutliers1Correct +1
   }
-  if (curr[i,2] != "normal" && curr[i,6] != "normal"){
-    curr[i,]$noOutliers0Correct <- curr[i,]$noOutliers0Correct +1
-  }
-  
-}
-
-type <- c(rep("no outliers\n(plots 1 and 5)" , 3) , rep("outliers\n(plots 3 and 8)" , 3))
-score <- rep(c("all correct" , "1 correct" , "0 correct"), 2)
-value <- c(sum(curr$noOutliersAllCorrect), sum(curr$noOutliers1Correct), sum(curr$noOutliers0Correct), sum(curr$outliersAllCorrect), sum(curr$outliers1Correct), sum(curr$outliers0Correct))
-data <- data.frame(type,score,value)
-
-p2 <- ggplot(data, aes(fill=score, y=value, x=type)) + 
-  geom_bar(position="dodge", stat="identity") + ylab("Score") + xlab("") + geom_text(position="dodge", stat="identity", label = value)
-p2
-
-# average correct responses based on demographics
-
-  # demographic question #1
-accuracy_pre1 <- aggregate(answers_demographics$V9, list(answers_demographics$pre1), FUN=mean)[-2,]
-
-pre1_bar <- ggplot(accuracy_pre1, aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") + ylab("Avg. Correct") + xlab("Current Status") + 
-      geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Experience")
-pre1_box <- ggplot(filter(answers_demographics, pre1!="null"), aes(x=pre1, y=V9, fill=pre1)) + geom_boxplot() + xlab("Experience level") + ylab("") +
-      theme(legend.position="none") + ggtitle("Average Correct Based on Experience")
-
-
-  # demographic question #2
-accuracy_pre2 <- aggregate(answers_demographics$V9, list(answers_demographics$pre2), FUN=mean)[-4,]
-
-pre2_bar <- ggplot(accuracy_pre2, aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") +
-  geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Coursework")
-pre2_box <- ggplot(filter(answers_demographics, pre2!="null"), aes(x=pre2, y=V9, fill=pre2)) + geom_boxplot() + xlab("Courses completed") + ylab("") +
-  theme(legend.position="none")
-
-  # demographic quesiton #3
-accuracy_pre3 <- aggregate(answers_demographics$V9, list(answers_demographics$pre3), FUN=mean)[-3,]
-
-pre3grouped <- filter(answers_demographics, pre3 != "null")
-pre3grouped$pre3group <- if_else(pre3grouped$pre3 == "yes", "yes", "no/unsure")
-
-pre3_bar <- ggplot(accuracy_pre3, aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") + ylab("Avg. Correct") +
-  geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Experience")
-pre3_box <- ggplot(filter(answers_demographics, pre3!="null"), aes(x=pre3, y=V9, fill=pre3)) + geom_boxplot() + xlab("Seen q-q plot?") + ylab("") +
-  theme(legend.position="none")
-
-
-grid.arrange(pre1_bar, pre1_box)
-grid.arrange(pre2_bar, pre2_box)
-grid.arrange(pre3_bar, pre3_box)
-
-
-
-
-pre3out <- aov(pre3grouped$V9~pre3grouped$pre2)
-summary(pre3out)
-
-
-pre2filter <- filter(answers_demographics, pre2 != "null")
-pre2out <- aov(pre2filter$V9~pre2filter$pre2)
-summary(pre2out)
-
-out2 <- aov(pre2filter$V9~pre2filter$pre2)
-summary(out2)
-
-temp2 <- filter(answers_demographics, pre3 != "null")
-temp2$pre3group <- if_else(temp2$pre3 == "yes", "yes", "no/unsure")
-
-joined <- inner_join(answers_demographics, survey_order, by="userID")
-s1 <- ggplot(joined, aes(x=survey1_ord, y=survey1_dist)) + geom_bar(position=position_dodge()) + theme(legend.position="none") + ylab("Avg. Correct") +
-  geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Experience")
-s1
-
-#average correct responses based on 'have you seen a q-q plot before?'
-exposure <- aggregate(answers_demographics$V10, list(answers_demographics$pre3), FUN=mean)
-
-exposure_bar <- ggplot(exposure[-3,], aes(x=reorder(Group.1, -x), y=x, fill=Group.1)) + geom_bar(stat="identity") + theme(legend.position="none") + ylab("Avg. Correct") +
-      geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + ggtitle("Average Correct Based on Experience")
-exposure_box <- ggplot(answers_demographics, aes(x=pre3, y=V10, fill=pre3)) + geom_boxplot() + xlab("Seen q-q plot?") + ylab("") +
-      theme(legend.position="none")
-
-yleft <- textGrob(expression(paste("Average Correct Responses")), 
-                  rot = 90, gp = gpar(fontsize = 12))
-
-# averages based on demographic questions
-grid.arrange(level_bar, experience_bar, exposure_bar, level_box, experience_box, exposure_box, nrow = 2, top = "Preliminary Visualizations", left = yleft)
-
-# table manipulation
-plot1ord <- survey_order %>% select(c(userID, survey1_ord))
-plot2ord <- survey_order %>% select(c(userID, survey2_ord))
-plot3ord <- survey_order %>% select(c(userID, survey3_ord))
-plot4ord <- survey_order %>% select(c(userID, survey4_ord))
-plot5ord <- survey_order %>% select(c(userID, survey5_ord))
-plot6ord <- survey_order %>% select(c(userID, survey6_ord))
-plot7ord <- survey_order %>% select(c(userID, survey7_ord))
-plot8ord <- survey_order %>% select(c(userID, survey8_ord))
-
-plot1ans <- answers_demographics %>% select(c(userID, survey1_dist))
-plot2ans <- answers_demographics %>% select(c(userID, survey2_dist))
-plot3ans <- answers_demographics %>% select(c(userID, survey3_dist))
-plot4ans <- answers_demographics %>% select(c(userID, survey4_dist))
-plot5ans <- answers_demographics %>% select(c(userID, survey5_dist))
-plot6ans <- answers_demographics %>% select(c(userID, survey6_dist))
-plot7ans <- answers_demographics %>% select(c(userID, survey7_dist))
-plot8ans <- answers_demographics %>% select(c(userID, survey8_dist))
-
-p1 <- left_join(plot1ans, plot1ord, by="userID")
-p2 <- left_join(plot2ans, plot2ord, by="userID")
-p3 <- left_join(plot3ans, plot3ord, by="userID")
-p4 <- left_join(plot4ans, plot4ord, by="userID")
-p5 <- left_join(plot5ans, plot5ord, by="userID")
-p6 <- left_join(plot6ans, plot6ord, by="userID")
-p7 <- left_join(plot7ans, plot7ord, by="userID")
-p8 <- left_join(plot8ans, plot8ord, by="userID")
-
-for (i in 1:nrow(p1)){
-  if (p1[i,2]==1){
-    p1[i,4] <- "correct"
-  }
-  else{
-    p1[i,4] <- "incorrect"
+  if (x5[i,2] != "normal" && x5[i,6] != "normal"){
+    x5[i,]$noOutliers0Correct <- x5[i,]$noOutliers0Correct +1
   }
 }
 
-for (i in 1:nrow(p2)){
-  if (p2[i,2]==1){
-    p2[i,4] <- "correct"
-  }
-  else{
-    p2[i,4] <- "incorrect"
-  }
-}
+df_outlier_comparison_normal <- x5[-c(2:9)]
+df_outlier_comparison_normal <- df_outlier_comparison_normal %>% adorn_totals("row")
 
-for (i in 1:nrow(p3)){
-  if (p3[i,2]==1){
-    p3[i,4] <- "correct"
-  }
-  else{
-    p3[i,4] <- "incorrect"
-  }
-}
+# d14 #
+x6 <- subset(final_survey, select = -c(survey0_dist))
+x6$outliersCorrect <- 0
+x6$outliersIncorrect <- 0
+x6$noOutliersCorrect <- 0
+x6$noOutliersIncorrect <- 0
 
-for (i in 1:nrow(p4)){
-  if (p4[i,2]==1){
-    p4[i,4] <- "correct"
+for (i in 1:123){
+  # outliers
+  if (x6[i,7] == "non-normal"){
+    x6[i,]$outliersCorrect <- x6[i,]$outliersCorrect +1
   }
-  else{
-    p4[i,4] <- "incorrect"
+  if (x6[i,7] != "non-normal"){
+    x6[i,]$outliersIncorrect <- x6[i,]$outliersIncorrect +1
   }
-}
-
-for (i in 1:nrow(p5)){
-  if (p5[i,2]==1){
-    p5[i,4] <- "correct"
+  # no outliers
+  if (x6[i,5] == "non-normal"){
+    x6[i,]$noOutliersCorrect <- x6[i,]$noOutliersCorrect +1
   }
-  else{
-    p5[i,4] <- "incorrect"
+  if (x6[i,5] != "non-normal"){
+    x6[i,]$noOutliersIncorrect <- x6[i,]$noOutliersIncorrect +1
   }
 }
 
-for (i in 1:nrow(p6)){
-  if (p6[i,2]==1){
-    p6[i,4] <- "correct"
+df_outlier_comparison_uniform <- x6[-c(2:9)]
+df_outlier_comparison_uniform <- df_outlier_comparison_uniform %>% adorn_totals("row")
+
+# d15 #
+x7 <- subset(final_survey, select = -c(survey0_dist))
+x7$outliersCorrect <- 0
+x7$outliersIncorrect <- 0
+x7$noOutliersCorrect <- 0
+x7$noOutliersIncorrect <- 0
+
+for (i in 1:123){
+  # outliers
+  if (x7[i,8] == "non-normal"){
+    x7[i,]$outliersCorrect <- x7[i,]$outliersCorrect +1
   }
-  else{
-    p6[i,4] <- "incorrect"
+  if (x7[i,8] != "non-normal"){
+    x7[i,]$outliersIncorrect <- x7[i,]$outliersIncorrect +1
+  }
+  # no outliers
+  if (x7[i,3] == "non-normal"){
+    x7[i,]$noOutliersCorrect <- x7[i,]$noOutliersCorrect +1
+  }
+  if (x7[i,3] != "non-normal"){
+    x7[i,]$noOutliersIncorrect <- x7[i,]$noOutliersIncorrect +1
   }
 }
 
-for (i in 1:nrow(p7)){
-  if (p7[i,2]==1){
-    p7[i,4] <- "correct"
-  }
-  else{
-    p7[i,4] <- "incorrect"
-  }
+df_outlier_comparison_f <- x7[-c(2:9)]
+df_outlier_comparison_f <- df_outlier_comparison_f %>% adorn_totals("row")
+
+# d16 #
+
+# split by plot
+p1 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey1_dist, survey1_ord)) 
+p2 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey2_dist, survey2_ord)) 
+p3 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey3_dist, survey3_ord)) 
+p4 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey4_dist, survey4_ord))
+p5 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey5_dist, survey5_ord)) 
+p6 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey6_dist, survey6_ord)) 
+p7 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey7_dist, survey7_ord)) 
+p8 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey8_dist, survey8_ord)) 
+
+# get totals
+p9 <- aggregate(p1$survey1_dist, by=list(p1$survey1_ord), FUN=length)
+p10 <- aggregate(p2$survey2_dist, by=list(p2$survey2_ord), FUN=length)
+p11 <- aggregate(p3$survey3_dist, by=list(p3$survey3_ord), FUN=length)
+p12 <- aggregate(p4$survey4_dist, by=list(p4$survey4_ord), FUN=length)
+p13 <- aggregate(p5$survey5_dist, by=list(p5$survey5_ord), FUN=length)
+p14 <- aggregate(p6$survey6_dist, by=list(p6$survey6_ord), FUN=length)
+p15 <- aggregate(p7$survey7_dist, by=list(p7$survey7_ord), FUN=length)
+p16 <- aggregate(p8$survey8_dist, by=list(p8$survey8_ord), FUN=length)
+
+# how many were correct
+p17 <- p1 %>% filter(survey1_dist == "normal")
+p17 <- aggregate(p17$survey1_dist, by=list(p17$survey1_ord), FUN=length)
+
+p18 <- p2 %>% filter(survey2_dist == "non-normal")
+p18 <- aggregate(p18$survey2_dist, by=list(p18$survey2_ord), FUN=length)
+
+p19 <- p3 %>% filter(survey3_dist == "normal")
+p19 <- aggregate(p19$survey3_dist, by=list(p19$survey3_ord), FUN=length)
+
+p20 <- p4 %>% filter(survey4_dist == "non-normal")
+p20 <- aggregate(p20$survey4_dist, by=list(p20$survey4_ord), FUN=length)
+
+p21 <- p5 %>% filter(survey5_dist == "normal")
+p21 <- aggregate(p21$survey5_dist, by=list(p21$survey5_ord), FUN=length)
+
+p22 <- p6 %>% filter(survey6_dist == "non-normal")
+p22 <- aggregate(p22$survey6_dist, by=list(p22$survey6_ord), FUN=length)
+
+p23 <- p7 %>% filter(survey7_dist == "non-normal")
+p23 <- aggregate(p23$survey7_dist, by=list(p23$survey7_ord), FUN=length)
+
+p24 <- p8 %>% filter(survey8_dist == "normal")
+p24 <- aggregate(p24$survey8_dist, by=list(p24$survey8_ord), FUN=length)
+
+df_correct_chisq <- merge(p17, p18, by = "Group.1") %>% merge(p19, by = "Group.1") %>% 
+  merge(p20, by = "Group.1") %>% merge(p21, by = "Group.1") %>% 
+  merge(p22, by = "Group.1") %>% merge(p23, by = "Group.1") %>% 
+  merge(p24, by = "Group.1") 
+
+names(df_correct_chisq)[1] <- "feature"
+names(df_correct_chisq)[2] <- "plot1"
+names(df_correct_chisq)[3] <- "plot2"
+names(df_correct_chisq)[4] <- "plot3"
+names(df_correct_chisq)[5] <- "plot4"
+names(df_correct_chisq)[6] <- "plot5"
+names(df_correct_chisq)[7] <- "plot6"
+names(df_correct_chisq)[8] <- "plot7"
+names(df_correct_chisq)[9] <- "plot8"
+
+df_correct_chisq[1,1] <- "none"
+df_correct_chisq[2,1] <- "refline"
+df_correct_chisq[3,1] <- "bands"
+
+df_correct_chisq[nrow(df_correct_chisq)+1,] <- NA
+df_correct_chisq[nrow(df_correct_chisq)+1,] <- NA
+
+df_correct_chisq[4,1] <- "chi-square"
+df_correct_chisq[5,1] <- "p-value"
+
+for (i in 2:9){
+  out <- chisq.test(df_correct_chisq[1:3, i], p = c(1/3, 1/3, 1/3))
+  df_correct_chisq[4,i] <- out$statistic
+  df_correct_chisq[5,i] <- out$p.value 
 }
 
-for (i in 1:nrow(p8)){
-  if (p8[i,2]==1){
-    p8[i,4] <- "correct"
-  }
-  else{
-    p8[i,4] <- "incorrect"
-  }
+# get percentages
+p17$x <- p17$x / sum(p17$x)
+p18$x <- p18$x / sum(p18$x)
+p19$x <- p19$x / sum(p19$x)
+p20$x <- p20$x / sum(p20$x)
+p21$x <- p21$x / sum(p21$x)
+p22$x <- p22$x / sum(p22$x)
+p23$x <- p23$x / sum(p23$x)
+p24$x <- p24$x / sum(p24$x)
+
+# d17 #
+
+# split by plot
+p1 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey1_dist, survey1_ord)) 
+p2 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey2_dist, survey2_ord)) 
+p3 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey3_dist, survey3_ord)) 
+p4 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey4_dist, survey4_ord))
+p5 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey5_dist, survey5_ord)) 
+p6 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey6_dist, survey6_ord)) 
+p7 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey7_dist, survey7_ord)) 
+p8 <- subset(merge(x=final_survey,y=survey_order,by="userID"), select = c(survey8_dist, survey8_ord)) 
+
+# get totals
+p9 <- aggregate(p1$survey1_dist, by=list(p1$survey1_ord), FUN=length)
+p10 <- aggregate(p2$survey2_dist, by=list(p2$survey2_ord), FUN=length)
+p11 <- aggregate(p3$survey3_dist, by=list(p3$survey3_ord), FUN=length)
+p12 <- aggregate(p4$survey4_dist, by=list(p4$survey4_ord), FUN=length)
+p13 <- aggregate(p5$survey5_dist, by=list(p5$survey5_ord), FUN=length)
+p14 <- aggregate(p6$survey6_dist, by=list(p6$survey6_ord), FUN=length)
+p15 <- aggregate(p7$survey7_dist, by=list(p7$survey7_ord), FUN=length)
+p16 <- aggregate(p8$survey8_dist, by=list(p8$survey8_ord), FUN=length)
+
+# how many were incorrect
+p17 <- p1 %>% filter(survey1_dist != "normal")
+p17 <- aggregate(p17$survey1_dist, by=list(p17$survey1_ord), FUN=length)
+
+p18 <- p2 %>% filter(survey2_dist != "non-normal")
+p18 <- aggregate(p18$survey2_dist, by=list(p18$survey2_ord), FUN=length)
+
+p19 <- p3 %>% filter(survey3_dist != "normal")
+p19 <- aggregate(p19$survey3_dist, by=list(p19$survey3_ord), FUN=length)
+
+p20 <- p4 %>% filter(survey4_dist != "non-normal")
+p20 <- aggregate(p20$survey4_dist, by=list(p20$survey4_ord), FUN=length)
+
+p21 <- p5 %>% filter(survey5_dist != "normal")
+p21 <- aggregate(p21$survey5_dist, by=list(p21$survey5_ord), FUN=length)
+
+p22 <- p6 %>% filter(survey6_dist != "non-normal")
+p22 <- aggregate(p22$survey6_dist, by=list(p22$survey6_ord), FUN=length)
+
+p23 <- p7 %>% filter(survey7_dist != "non-normal")
+p23 <- aggregate(p23$survey7_dist, by=list(p23$survey7_ord), FUN=length)
+
+p24 <- p8 %>% filter(survey8_dist != "normal")
+p24 <- aggregate(p24$survey8_dist, by=list(p24$survey8_ord), FUN=length)
+
+df_incorrect_chisq <- merge(p17, p18, by = "Group.1") %>% merge(p19, by = "Group.1") %>% 
+  merge(p20, by = "Group.1") %>% merge(p21, by = "Group.1") %>% 
+  merge(p22, by = "Group.1") %>% merge(p23, by = "Group.1") %>% 
+  merge(p24, by = "Group.1") 
+
+names(df_incorrect_chisq)[1] <- "feature"
+names(df_incorrect_chisq)[2] <- "plot1"
+names(df_incorrect_chisq)[3] <- "plot2"
+names(df_incorrect_chisq)[4] <- "plot3"
+names(df_incorrect_chisq)[5] <- "plot4"
+names(df_incorrect_chisq)[6] <- "plot5"
+names(df_incorrect_chisq)[7] <- "plot6"
+names(df_incorrect_chisq)[8] <- "plot7"
+names(df_incorrect_chisq)[9] <- "plot8"
+
+df_incorrect_chisq[1,1] <- "none"
+df_incorrect_chisq[2,1] <- "refline"
+df_incorrect_chisq[3,1] <- "bands"
+
+df_incorrect_chisq[nrow(df_incorrect_chisq)+1,] <- NA
+df_incorrect_chisq[nrow(df_incorrect_chisq)+1,] <- NA
+
+df_incorrect_chisq[4,1] <- "chi-square"
+df_incorrect_chisq[5,1] <- "p-value"
+
+for (i in 2:9){
+  out <- chisq.test(df_incorrect_chisq[1:3, i], p = c(1/3, 1/3, 1/3))
+  df_incorrect_chisq[4,i] <- out$statistic
+  df_incorrect_chisq[5,i] <- out$p.value 
 }
 
-p1total <- dcast(p1, survey1_ord ~ V4)
-p2total <- dcast(p2, survey2_ord ~ V4)
-p3total <- dcast(p3, survey3_ord ~ V4)
-p4total <- dcast(p4, survey4_ord ~ V4)
-p5total <- dcast(p5, survey5_ord ~ V4)
-p6total <- dcast(p6, survey6_ord ~ V4)
-p7total <- dcast(p7, survey7_ord ~ V4)
-p8total <- dcast(p8, survey8_ord ~ V4)
-
-melted1 <- melt(p1total, id="survey1_ord")
-melted1$survey1_ord[melted1$survey1_ord == 1] <- "no features"
-melted1$survey1_ord[melted1$survey1_ord == 2] <- "ref. line"
-melted1$survey1_ord[melted1$survey1_ord == 3] <- "ref. line and bands"
-
-melted2 <- melt(p2total, id="survey2_ord")
-melted2$survey2_ord[melted2$survey2_ord == 1] <- "no features"
-melted2$survey2_ord[melted2$survey2_ord == 2] <- "ref. line"
-melted2$survey2_ord[melted2$survey2_ord == 3] <- "ref. line and bands"
-
-melted3 <- melt(p3total, id="survey3_ord")
-melted3$survey3_ord[melted3$survey3_ord == 1] <- "no features"
-melted3$survey3_ord[melted3$survey3_ord == 2] <- "ref. line"
-melted3$survey3_ord[melted3$survey3_ord == 3] <- "ref. line and bands"
-
-melted4 <- melt(p4total, id="survey4_ord")
-melted4$survey4_ord[melted4$survey4_ord ==  1] <- "no features"
-melted4$survey4_ord[melted4$survey4_ord == 2] <- "ref. line"
-melted4$survey4_ord[melted4$survey4_ord == 3] <- "ref. line and bands"
-
-melted5 <- melt(p5total, id="survey5_ord")
-melted5$survey5_ord[melted5$survey5_ord == 1] <- "no features"
-melted5$survey5_ord[melted5$survey5_ord == 2] <- "ref. line"
-melted5$survey5_ord[melted5$survey5_ord == 3] <- "ref. line and bands"
-
-melted6 <- melt(p6total, id="survey6_ord")
-melted6$survey6_ord[melted6$survey6_ord == 1] <- "no features"
-melted6$survey6_ord[melted6$survey6_ord == 2] <- "ref. line"
-melted6$survey6_ord[melted6$survey6_ord == 3] <- "ref. line and bands"
-
-melted7 <- melt(p7total, id="survey7_ord")
-melted7$survey7_ord[melted7$survey7_ord == 1] <- "no features"
-melted7$survey7_ord[melted7$survey7_ord == 2] <- "ref. line"
-melted7$survey7_ord[melted7$survey7_ord == 3] <- "ref. line and bands"
-
-melted8 <- melt(p8total, id="survey8_ord")
-melted8$survey8_ord[melted8$survey8_ord == 1] <- "no features"
-melted8$survey8_ord[melted8$survey8_ord == 2] <- "ref. line"
-melted8$survey8_ord[melted8$survey8_ord == 3] <- "ref. line and bands"
-
-# bar chart -- correctness by plot type
-bar1 <- ggplot(melted1, aes(x=survey1_ord, y=value, fill=variable)) + geom_bar(stat="identity", position = "dodge") +
-  geom_text(aes(label=value), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9)) + xlab("Plot features") +
-  ylab("Responses")
-bar1
-
-bar2 <- ggplot(melted2, aes(x=survey2_ord, y=value, fill=variable)) + geom_bar(stat="identity", position = "dodge") +
-  geom_text(aes(label=value), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-bar2
-
-bar3 <- ggplot(melted3, aes(x=survey3_ord, y=value, fill=variable)) + geom_bar(stat="identity", position = "dodge") +
-  geom_text(aes(label=value), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-bar3
-
-bar4 <- ggplot(melted4, aes(x=survey4_ord, y=value, fill=variable)) + geom_bar(stat="identity", position = "dodge") +
-  geom_text(aes(label=value), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-bar4
-
-bar5 <- ggplot(melted5, aes(x=survey5_ord, y=value, fill=variable)) + geom_bar(stat="identity", position = "dodge") +
-  geom_text(aes(label=value), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-bar5
-
-bar6 <- ggplot(melted6, aes(x=survey6_ord, y=value, fill=variable)) + geom_bar(stat="identity", position = "dodge") +
-  geom_text(aes(label=value), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-bar6
-
-bar7 <- ggplot(melted7, aes(x=survey7_ord, y=value, fill=variable)) + geom_bar(stat="identity", position = "dodge") +
-  geom_text(aes(label=value), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-bar7
-
-bar8 <- ggplot(melted8, aes(x=survey8_ord, y=value, fill=variable)) + geom_bar(stat="identity", position = "dodge") +
-  geom_text(aes(label=value), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-bar8
-
-grid.arrange(bar1, grid.arrange(Dataset1noRef,Dataset1ref,Dataset1bands), nrow=1, top = "Plot 1 (Pilot)")
-grid.arrange(bar2, grid.arrange(Dataset2noRef,Dataset2ref,Dataset2bands), nrow=1, top = "Plot 2 (Pilot)")
-grid.arrange(bar3, grid.arrange(Dataset3noRef,Dataset3ref,Dataset3bands), nrow=1, top = "Plot 3 (Pilot)")
-grid.arrange(bar4, grid.arrange(Dataset4noRef,Dataset4ref,Dataset4bands), nrow=1, top = "Plot 4 (Pilot)")
-grid.arrange(bar5, grid.arrange(Dataset5noRef,Dataset5ref,Dataset5bands), nrow=1, top = "Plot 5 (Pilot)")
-grid.arrange(bar6, grid.arrange(Dataset6noRef,Dataset6ref,Dataset6bands), nrow=1, top = "Plot 6 (Pilot)")
-grid.arrange(bar7, grid.arrange(Dataset7noRef_2,Dataset7ref_2,Dataset7bands_2), nrow=1, top = "Plot 7 (Pilot)")
-grid.arrange(bar8, grid.arrange(Dataset8noRef_2,Dataset8ref_2,Dataset8bands_2), nrow=1, top = "Plot 8 (Pilot)")
+# get percentages
+p17$x <- p17$x / sum(p17$x)
+p18$x <- p18$x / sum(p18$x)
+p19$x <- p19$x / sum(p19$x)
+p20$x <- p20$x / sum(p20$x)
+p21$x <- p21$x / sum(p21$x)
+p22$x <- p22$x / sum(p22$x)
+p23$x <- p23$x / sum(p23$x)
+p24$x <- p24$x / sum(p24$x)
 
 
-# more table manipulation w/ visualizations
-# bar chart -- answer based on plot type
+# d18 #
 
-t1 <- data.frame(matrix(ncol=3,nrow=3))
-names <- c("features","normal","non-normal")
-colnames(t1) <- names
+# checking variances
+group_by(df_answers_demographics, pre2) %>% summarize(var(Total_Correct))
 
-t1[1,1] <- "none"
-t1[2,1] <- "ref line"
-t1[3,1] <- "ref line and bands"
+undergrads <- filter(df_answers_demographics, pre1 == "undergraduate")
+undergrads <- filter(undergrads, pre2 != "null")
 
-t1[1,2] <- 3
-t1[1,3] <- 0
-t1[2,2] <- 20
-t1[2,3] <- 3
-t1[3,2:3] <- '0'
+group_by(undergrads, pre2) %>% summarize(var(Total_Correct))
 
-t1_long <- gather(t1, response, count, normal:'non-normal') #Create long format
-t1_long$count <- as.numeric(t1_long$count)
+# testing homogeneity of variances
+bartlett <- bartlett.test(Total_Correct ~ pre2, data = filter(undergrads, pre2 != "null"))
+bartlett
 
-t1_bar <- ggplot(t1_long, aes(x=features, y=count, fill=response)) + geom_bar(stat="identity", position="dodge") +
-  geom_text(aes(label=count), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-t1_bar
+# anova test on for correct responses
+out <- aov(Total_Correct ~ pre2, data = undergrads)
+anova_experience_level <- summary(out)
 
-t2 <- data.frame(matrix(ncol=3,nrow=3))
-names <- c("features","normal","non-normal")
-colnames(t2) <- names
+# confidence intervals
+intervals <- pairwise.t.test(undergrads$Total_Correct, filter(undergrads, pre2 != "null")$pre2, p.adjust.method = "bonferroni")
 
-t2[1,1] <- "none"
-t2[2,1] <- "ref line"
-t2[3,1] <- "ref line and bands"
+tukey <- simint(undergrads$Total_Correct ~ undergrads$pre2, data = undergrads, conf.level = 0.95)
 
-t2[1,2] <- melted2[4,3]
-t2[1,3] <- melted2[1,3]
-t2[2,2] <- melted2[5,3]
-t2[2,3] <- melted2[2,3]
-t2[3,2] <- melted2[6,3]
-t2[3,3] <- melted2[3,3]
+### END OF DATAFRAMES ###
 
-t2_long <- gather(t2, response, count, normal:'non-normal') #Create long format
-t2_long$count <- as.numeric(t2_long$count)
+##################
+# Visualizations #
+##################
 
-t2_bar <- ggplot(t2_long, aes(x=features, y=count, fill=response)) + geom_bar(stat="identity", position="dodge") +
-  geom_text(aes(label=count), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-t2_bar
+# v1 #
+dem1_bar <- ggplot(df_dem1_table, aes(x=Group.1, y=x, fill=Group.1)) + geom_bar(stat="identity") + 
+  theme(legend.position="none") + ylab("Avg. Correct") +  
+  geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + 
+  scale_x_discrete(limits = c("undergraduate", "graduate", "professional"))
 
-t3 <- data.frame(matrix(ncol=3,nrow=3))
-names <- c("features","normal","non-normal")
-colnames(t3) <- names
+# v2 #
+temp1 <- filter(df_answers_demographics, pre1!="null")
+dem1_box <- ggplot(temp1, aes(x=pre1, y=temp1$"Total_Correct", fill = pre1)) + geom_boxplot() + 
+  ylab("") + theme(legend.position="none")  + geom_jitter() + theme(axis.title.x=element_blank()) +
+  scale_x_discrete(limits = c("undergraduate", "graduate", "professional"))
 
-t3[1,1] <- "none"
-t3[2,1] <- "ref line"
-t3[3,1] <- "ref line and bands"
+# v3 #
+dem1_combo <- grid.arrange(dem1_bar, dem1_box, nrow = 1)
 
-t3[1,2] <- melted3[1,3]
-t3[1,3] <- melted3[3,3]
-t3[2,2:3] <- 'NA'
-t3[3,2] <- melted3[2,3]
-t3[3,3] <- melted3[4,3]
+# v4 #
+dem2_bar <- ggplot(df_dem2_table, aes(x=Group.1, y=x, fill=Group.1)) + geom_bar(stat="identity") + 
+  theme(legend.position="none") + ylab("Avg. Correct") +  
+  geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + 
+  scale_x_discrete(limits = c("0 courses", "1-2 courses", "3+ courses"))
 
-t3_long <- gather(t3, response, count, normal:'non-normal') #Create long format
-t3_long$count <- as.numeric(t3_long$count)
+# v5 #
+dem2_box <- ggplot(temp2, aes(x=pre2, y=temp2$"Total_Correct", fill = pre2)) + geom_boxplot() + 
+  ylab("") + theme(legend.position="none")  + geom_jitter() + theme(axis.title.x=element_blank()) +
+  scale_x_discrete(limits = c("0 courses", "1-2 courses", "3+ courses"))
 
-t3_bar <- ggplot(t3_long, aes(x=features, y=count, fill=response)) + geom_bar(stat="identity", position="dodge") +
-  geom_text(aes(label=count), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-t3_bar
+# v6 #
+dem2_combo <- grid.arrange(dem2_bar, dem2_box, nrow = 1)
 
-t4 <- data.frame(matrix(ncol=3,nrow=3))
-names <- c("features","normal","non-normal")
-colnames(t4) <- names
+# v7 #
+dem3_bar <- ggplot(df_dem3_table, aes(x=Group.1, y=x, fill=Group.1)) + geom_bar(stat="identity") + 
+  theme(legend.position="none") + ylab("Avg. Correct") +  
+  geom_text(aes(label=round(x, 2)), vjust=1.6, color="white", size=3.5) + theme(axis.title.x=element_blank()) + 
+  scale_x_discrete(limits = c("yes", "no", "not sure"))
 
-t4[1,1] <- "none"
-t4[2,1] <- "ref line"
-t4[3,1] <- "ref line and bands"
+# v8 #
+temp3 <- filter(df_answers_demographics, pre3!="null")
+dem3_box <- ggplot(temp3, aes(x=pre3, y=temp3$"Total_Correct", fill = pre3)) + geom_boxplot() + 
+  ylab("") + theme(legend.position="none")  + geom_jitter() + theme(axis.title.x=element_blank()) +
+  scale_x_discrete(limits = c("yes", "no", "not sure"))
 
-t4[1,2] <- melted4[4,3]
-t4[1,3] <- melted4[1,3]
-t4[2,2] <- melted4[5,3]
-t4[2,3] <- melted4[2,3]
-t4[3,2] <- melted4[6,3]
-t4[3,3] <- melted4[3,3]
+# v9 #
+dem3_combo <- grid.arrange(dem3_bar, dem3_box, nrow = 1)
 
-t4_long <- gather(t4, response, count, normal:'non-normal') #Create long format
-t4_long$count <- as.numeric(t4_long$count)
-
-t4_bar <- ggplot(t4_long, aes(x=features, y=count, fill=response)) + geom_bar(stat="identity", position="dodge") +
-  geom_text(aes(label=count), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-t4_bar
-
-t5 <- data.frame(matrix(ncol=3,nrow=3))
-names <- c("features","normal","non-normal")
-colnames(t5) <- names
-
-t5[1,1] <- "none"
-t5[2,1] <- "ref line"
-t5[3,1] <- "ref line and bands"
-
-t5[1,2] <- melted5[1,3]
-t5[1,3] <- melted5[3,3]
-t5[2,2:3] <- 'NA'
-t5[3,2] <- melted5[2,3]
-t5[3,3] <- melted5[4,3]
-
-t5_long <- gather(t5, response, count, normal:'non-normal') #Create long format
-t5_long$count <- as.numeric(t5_long$count)
-
-t5_bar <- ggplot(t5_long, aes(x=features, y=count, fill=response)) + geom_bar(stat="identity", position="dodge") +
-  geom_text(aes(label=count), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-t5_bar
-
-t6 <- data.frame(matrix(ncol=3,nrow=3))
-names <- c("features","normal","non-normal")
-colnames(t6) <- names
-
-t6[1,1] <- "none"
-t6[2,1] <- "ref line"
-t6[3,1] <- "ref line and bands"
-
-t6[1,3] <- melted6[1,3]
-t6[1,2] <- melted6[3,3]
-t6[2,3] <- melted6[2,3]
-t6[2,2] <- melted6[4,3]
-t6[3,2:3] <- 'NA'
-
-t6_long <- gather(t6, response, count, normal:'non-normal') #Create long format
-t6_long$count <- as.numeric(t6_long$count)
-
-t6_bar <- ggplot(t6_long, aes(x=features, y=count, fill=response)) + geom_bar(stat="identity", position="dodge") +
-  geom_text(aes(label=count), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-t6_bar
-
-t7 <- data.frame(matrix(ncol=3,nrow=3))
-names <- c("features","normal","non-normal")
-colnames(t7) <- names
-
-t7[1,1] <- "none"
-t7[2,1] <- "ref line"
-t7[3,1] <- "ref line and bands"
-
-t7[1,3] <- melted7[1,3]
-t7[1,2] <- melted7[3,3]
-t7[2,3] <- melted7[2,3]
-t7[2,2] <- melted7[4,3]
-t7[3,2:3] <- 'NA'
-
-t7_long <- gather(t7, response, count, normal:'non-normal') #Create long format
-t7_long$count <- as.numeric(t7_long$count)
-
-t7_bar <- ggplot(t7_long, aes(x=features, y=count, fill=response)) + geom_bar(stat="identity", position="dodge") +
-  geom_text(aes(label=count), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-t7_bar
-
-t8 <- data.frame(matrix(ncol=3,nrow=3))
-names <- c("features","normal","non-normal")
-colnames(t8) <- names
-
-t8[1,2] <- melted8[1,3]
-t8[1,3] <- melted8[4,3]
-t8[2,2] <- melted8[2,3]
-t8[2,3] <- melted8[5,3]
-t8[3,2] <- melted8[3,3]
-t8[3,3] <- melted8[6,3]
-
-t8[1,1] <- "none"
-t8[2,1] <- "ref line"
-t8[3,1] <- "ref line and bands"
-
-t8_long <- gather(t8, response, count, normal:'non-normal') #Create long format
-t8_long$count <- as.numeric(t8_long$count)
-
-t8_bar <- ggplot(t8_long, aes(x=features, y=count, fill=response)) + geom_bar(stat="identity", position="dodge") +
-  geom_text(aes(label=count), color="black", size=3.5, vjust = -.5, position = position_dodge(0.9))+ xlab("Plot features")+
-  ylab("Responses")
-t8_bar
-
-grid.arrange(t1_bar, grid.arrange(Dataset1noRef,Dataset1ref,Dataset1bands), nrow=1, top = "Plot 1 (Pilot)")
-grid.arrange(t2_bar, grid.arrange(Dataset2noRef,Dataset2ref,Dataset2bands), nrow=1, top = "Plot 2 (Pilot)")
-grid.arrange(t3_bar, grid.arrange(Dataset3noRef,Dataset3ref,Dataset3bands), nrow=1, top = "Plot 3 (Pilot)")
-grid.arrange(t4_bar, grid.arrange(Dataset4noRef,Dataset4ref,Dataset4bands), nrow=1, top = "Plot 4 (Pilot)")
-grid.arrange(t5_bar, grid.arrange(Dataset5noRef,Dataset5ref,Dataset5bands), nrow=1, top = "Plot 5 (Pilot)")
-grid.arrange(t6_bar, grid.arrange(Dataset6noRef,Dataset6ref,Dataset6bands), nrow=1, top = "Plot 6 (Pilot)")
-grid.arrange(t7_bar, grid.arrange(Dataset7noRef_2,Dataset7ref_2,Dataset7bands_2), nrow=1, top = "Plot 7 (Pilot)")
-grid.arrange(t8_bar, grid.arrange(Dataset8noRef_2,Dataset8ref_2,Dataset8bands_2), nrow=1, top = "Plot 8 (Pilot)")
-
-# chi-square test for plots
-chisq1 <- chisq.test(t1[,2:3])
-chisq2 <- chisq.test(t2[,2:3])
-chisq3 <- chisq.test(t3[,2:3])
-chisq4 <- chisq.test(t4[,2:3])
-chisq5 <- chisq.test(t5[,2:3])
-chisq6 <- chisq.test(t6[,2:3])
-chisq7 <- chisq.test(t7[,2:3])
-chisq8 <- chisq.test(t8[,2:3])
+### END OF VISUALIZATIONS ###
